@@ -1,4 +1,4 @@
-﻿﻿<!doctype html>
+<!doctype html>
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
@@ -140,8 +140,9 @@
     .gallery-actions {
       display: grid;
       grid-template-columns:
-        minmax(170px, 220px)
-        minmax(220px, 260px)
+        minmax(160px, 210px)
+        minmax(170px, 210px)
+        minmax(210px, 250px)
         repeat(4, minmax(0, 1fr));
       gap: 8px;
       align-items: end;
@@ -185,10 +186,9 @@
 
     button {
       cursor: pointer;
-      white-space: normal;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-      display: flex;
+      white-space: nowrap;
+      display: inline-flex;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
       gap: 10px;
@@ -204,6 +204,7 @@
         0 1px 1px rgba(0,0,0,0.35),
         0 8px 18px rgba(0,0,0,0.16);
       transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
+      overflow: hidden;
     }
 
     button:hover:not(:disabled),
@@ -227,13 +228,14 @@
     }
 
     .btn-icon {
-      font-size: 20px;
+      font-size: 24px;
       line-height: 1;
       flex: 0 0 auto;
     }
 
     .btn-label {
       min-width: 0;
+      white-space: nowrap;
       font-weight: 600;
     }
 
@@ -338,6 +340,7 @@
     .hint {
       font-size: 12px;
       color: var(--muted);
+      min-height: 20px;
     }
 
     .gallery-card {
@@ -541,6 +544,14 @@
       .live-box {
         max-height: none;
       }
+
+      button {
+        white-space: normal;
+      }
+
+      .btn-label {
+        white-space: normal;
+      }
     }
   </style>
 </head>
@@ -551,7 +562,7 @@
         <div class="badge">GoPro Capture Studio</div>
         <h1>PNG + MP4 galeri, cache, klasöre kaydetme</h1>
       </div>
-      <div class="muted" id="buildInfo">Son güncelleme: 2026-04-02 11:20</div>
+      <div class="muted" id="buildInfo">Son güncelleme: 2026-04-02 11:35</div>
     </section>
 
     <section class="workspace">
@@ -657,9 +668,14 @@
           <div class="gallery-actions">
             <input id="baseNameInput" type="text" value="capture" placeholder="Dosya adı" />
 
+            <button id="pickFolderBtn" class="success">
+              <span class="btn-icon">📁</span>
+              <span class="btn-label">Klasör Seç</span>
+            </button>
+
             <button id="saveSelectedBtn" class="success" disabled>
-              <span class="btn-icon" id="saveSelectedIcon">📁</span>
-              <span class="btn-label" id="saveSelectedLabel">Klasör Seç ve Kaydet</span>
+              <span class="btn-icon" id="saveSelectedIcon">💾</span>
+              <span class="btn-label" id="saveSelectedLabel">Seçilenleri Kaydet</span>
             </button>
 
             <button id="selectAllBtn" disabled>
@@ -707,7 +723,7 @@
   </div>
 
   <script>
-    const APP_UPDATED_AT = "2026-04-02 11:20";
+    const APP_UPDATED_AT = "2026-04-02 11:35";
 
     const videoEl = document.getElementById("video");
     const deviceSelectEl = document.getElementById("videoDevice");
@@ -722,6 +738,7 @@
     const clearSelectionBtnEl = document.getElementById("clearSelectionBtn");
     const deleteSelectedBtnEl = document.getElementById("deleteSelectedBtn");
     const clearCacheBtnEl = document.getElementById("clearCacheBtn");
+    const pickFolderBtnEl = document.getElementById("pickFolderBtn");
     const saveSelectedBtnEl = document.getElementById("saveSelectedBtn");
     const saveSelectedIconEl = document.getElementById("saveSelectedIcon");
     const saveSelectedLabelEl = document.getElementById("saveSelectedLabel");
@@ -982,8 +999,8 @@
 
       saveSelectedIconEl.textContent = folderHandle ? "💾" : "📁";
       saveSelectedLabelEl.textContent = folderHandle
-        ? "Seçili Klasöre Kaydet"
-        : "Klasör Seç ve Kaydet";
+        ? "Seçilenleri Kaydet"
+        : "Önce Klasör Seç";
     }
 
     function updateAutoCaptureUi() {
@@ -1020,6 +1037,7 @@
       refreshBtnEl.disabled = !permissionGranted || autoCaptureRunning;
       grantBtnEl.disabled = permissionGranted && hasStream;
 
+      pickFolderBtnEl.disabled = !supportsDirectoryWriting();
       selectAllBtnEl.disabled = !hasItems;
       clearSelectionBtnEl.disabled = selectedCount === 0;
       deleteSelectedBtnEl.disabled = selectedCount === 0;
@@ -1143,16 +1161,25 @@
       });
     }
 
+    async function pickFolder() {
+      if (!supportsDirectoryWriting()) {
+        throw new Error("Bu tarayıcı klasör yazmayı desteklemiyor. Chrome veya Edge dene.");
+      }
+
+      folderHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+      folderName = folderHandle.name || "seçili_klasör";
+      await saveFolderHandleToSettings();
+      updateUiState();
+      setStatus(`Klasör seçildi.\nKlasör: ${folderName}`);
+    }
+
     async function ensureWritableFolderHandle() {
       if (!supportsDirectoryWriting()) {
         throw new Error("Bu tarayıcı klasör yazmayı desteklemiyor. Chrome veya Edge dene.");
       }
 
       if (!folderHandle) {
-        folderHandle = await window.showDirectoryPicker({ mode: "readwrite" });
-        folderName = folderHandle.name || "seçili_klasör";
-        await saveFolderHandleToSettings();
-        updateUiState();
+        await pickFolder();
         return;
       }
 
@@ -1168,10 +1195,7 @@
         }
       } catch (_) {}
 
-      folderHandle = await window.showDirectoryPicker({ mode: "readwrite" });
-      folderName = folderHandle.name || "seçili_klasör";
-      await saveFolderHandleToSettings();
-      updateUiState();
+      await pickFolder();
     }
 
     async function saveItemToCache(item) {
@@ -1860,6 +1884,14 @@
         }
 
         startAutoCaptureCountdown();
+      } catch (error) {
+        handleError(error);
+      }
+    });
+
+    pickFolderBtnEl.addEventListener("click", async () => {
+      try {
+        await pickFolder();
       } catch (error) {
         handleError(error);
       }
