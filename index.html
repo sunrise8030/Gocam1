@@ -372,19 +372,22 @@
     .gallery-card {
       min-height: 0;
       display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 8px;
+      grid-template-rows: 1fr;
+      overflow: hidden;
     }
 
     .gallery {
       min-height: 0;
+      height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 220px));
+      grid-auto-rows: 252px;
       gap: 10px;
-      padding-right: 2px;
+      justify-content: start;
       align-content: start;
+      padding-right: 4px;
     }
 
     .gallery-empty {
@@ -394,9 +397,13 @@
       color: var(--muted);
       background: #10131a;
       font-size: 13px;
+      width: 220px;
+      height: fit-content;
     }
 
     .item-card {
+      width: 220px;
+      height: 252px;
       border: 2px solid rgba(110, 168, 255, 0.16);
       border-radius: 14px;
       background: #11151d;
@@ -597,6 +604,16 @@
         max-height: none;
       }
 
+      .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 200px));
+        grid-auto-rows: 240px;
+      }
+
+      .item-card {
+        width: 200px;
+        height: 240px;
+      }
+
       button,
       .btn-label {
         white-space: normal;
@@ -612,7 +629,7 @@
         <h1 id="appTitle">PNG + MP4 galeri, cache, klasöre kaydetme</h1>
       </div>
       <div class="topbar-actions">
-        <div class="muted" id="buildInfo">v1.11 • Yazılım güncelleme: 02.04.2026 15:05:00</div>
+        <div class="muted" id="buildInfo">v1.12 • Yazılım güncelleme: 02.04.2026 15:25:00</div>
         <button id="langToggleBtn" class="lang-btn" title="Deutsch / Türkçe">
           <span class="btn-icon">🇩🇪</span>
           <span class="btn-label" id="langToggleLabel">DE</span>
@@ -660,13 +677,10 @@
           </div>
 
           <div class="auto-grid">
-            <label class="field">
-              <span id="autoModeLabel">Mod</span>
-              <select id="autoModeSelect">
-                <option value="photo">Foto</option>
-                <option value="video">Video</option>
-              </select>
-            </label>
+            <button id="autoModeToggleBtn" type="button">
+              <span class="btn-icon" id="autoModeToggleIcon">📸</span>
+              <span class="btn-label" id="autoModeToggleLabel">Foto</span>
+            </button>
 
             <label class="field">
               <span id="autoDelayLabel">Başlangıç gecikmesi</span>
@@ -684,8 +698,8 @@
             </label>
 
             <button id="autoToggleBtn" class="warning" disabled>
-              <span class="btn-icon" id="autoToggleIcon">🟡</span>
-              <span class="btn-label" id="autoToggleLabel">Oto Capture Başlat</span>
+              <span class="btn-icon" id="autoToggleIcon">📸</span>
+              <span class="btn-label" id="autoToggleLabel">Oto Foto Başlat</span>
             </button>
           </div>
 
@@ -790,8 +804,8 @@
   </div>
 
   <script>
-    const APP_VERSION = "1.11";
-    const APP_UPDATED_AT = "02.04.2026 15:05:00";
+    const APP_VERSION = "1.12";
+    const APP_UPDATED_AT = "02.04.2026 15:25:00";
 
     const translations = {
       tr: {
@@ -805,14 +819,15 @@
         recordStop: "MP4 Durdur",
         autoSectionTitle: "⏱️ Oto Capture",
         autoSectionHint: "Varsayılan: 6 sn sonra, 3 sn ara, 6 adet",
-        autoModeLabel: "Mod",
         autoModePhoto: "Foto",
         autoModeVideo: "Video",
         autoDelayLabel: "Başlangıç gecikmesi",
         autoIntervalLabel: "Aralık / Klip süresi",
         autoCountLabel: "Adet",
-        autoStart: "Oto Capture Başlat",
-        autoStop: "Oto Capture Durdur",
+        autoStartPhoto: "Oto Foto Başlat",
+        autoStopPhoto: "Oto Foto Durdur",
+        autoStartVideo: "Oto Video Başlat",
+        autoStopVideo: "Oto Video Durdur",
         previewTitle: "🖥️ Canlı Ön İzleme",
         metaDeviceLabel: "Cihaz",
         metaResolutionLabel: "Çözünürlük",
@@ -830,7 +845,6 @@
         deleteSelectedBtnLabel: "Seçilenleri Sil",
         clearCacheBtnLabel: "Cache Temizle",
         closeModalBtnLabel: "Kapat",
-        modalTitleDefault: "Ön izleme",
         buildInfo: `v${APP_VERSION} • Yazılım güncelleme: ${APP_UPDATED_AT}`,
         folderNotSelected: "Klasör seçilmedi",
         folderSelected: "Seçili klasör: {name}",
@@ -903,14 +917,15 @@
         recordStop: "MP4 Stopp",
         autoSectionTitle: "⏱️ Auto Capture",
         autoSectionHint: "Standard: nach 6 Sek., alle 3 Sek., 6 Einträge",
-        autoModeLabel: "Modus",
         autoModePhoto: "Foto",
         autoModeVideo: "Video",
         autoDelayLabel: "Startverzögerung",
         autoIntervalLabel: "Intervall / Clipdauer",
         autoCountLabel: "Anzahl",
-        autoStart: "Auto Capture Start",
-        autoStop: "Auto Capture Stopp",
+        autoStartPhoto: "Auto Foto Start",
+        autoStopPhoto: "Auto Foto Stopp",
+        autoStartVideo: "Auto Video Start",
+        autoStopVideo: "Auto Video Stopp",
         previewTitle: "🖥️ Live-Vorschau",
         metaDeviceLabel: "Gerät",
         metaResolutionLabel: "Auflösung",
@@ -928,7 +943,6 @@
         deleteSelectedBtnLabel: "Auswahl löschen",
         clearCacheBtnLabel: "Cache leeren",
         closeModalBtnLabel: "Schließen",
-        modalTitleDefault: "Vorschau",
         buildInfo: `v${APP_VERSION} • Software-Update: ${APP_UPDATED_AT}`,
         folderNotSelected: "Kein Ordner gewählt",
         folderSelected: "Gewählter Ordner: {name}",
@@ -1032,7 +1046,9 @@
     const modalBodyEl = document.getElementById("modalBody");
     const closeModalBtnEl = document.getElementById("closeModalBtn");
 
-    const autoModeSelectEl = document.getElementById("autoModeSelect");
+    const autoModeToggleBtnEl = document.getElementById("autoModeToggleBtn");
+    const autoModeToggleIconEl = document.getElementById("autoModeToggleIcon");
+    const autoModeToggleLabelEl = document.getElementById("autoModeToggleLabel");
     const autoDelayInputEl = document.getElementById("autoDelayInput");
     const autoIntervalInputEl = document.getElementById("autoIntervalInput");
     const autoCountInputEl = document.getElementById("autoCountInput");
@@ -1084,6 +1100,20 @@
       return value;
     }
 
+    function getAutoStartLabel() {
+      return autoCaptureMode === "video" ? t("autoStartVideo") : t("autoStartPhoto");
+    }
+
+    function getAutoStopLabel() {
+      return autoCaptureMode === "video" ? t("autoStopVideo") : t("autoStopPhoto");
+    }
+
+    function updateAutoModeButtonUi() {
+      const isVideo = autoCaptureMode === "video";
+      autoModeToggleIconEl.textContent = isVideo ? "🎥" : "📸";
+      autoModeToggleLabelEl.textContent = isVideo ? t("autoModeVideo") : t("autoModePhoto");
+    }
+
     function applyTranslations() {
       document.documentElement.lang = currentLang;
       document.getElementById("appTitle").textContent = t("appTitle");
@@ -1094,7 +1124,6 @@
       document.getElementById("captureBtnLabel").textContent = t("captureBtnLabel");
       document.getElementById("autoSectionTitle").textContent = t("autoSectionTitle");
       document.getElementById("autoSectionHint").textContent = t("autoSectionHint");
-      document.getElementById("autoModeLabel").textContent = t("autoModeLabel");
       document.getElementById("autoDelayLabel").textContent = t("autoDelayLabel");
       document.getElementById("autoIntervalLabel").textContent = t("autoIntervalLabel");
       document.getElementById("autoCountLabel").textContent = t("autoCountLabel");
@@ -1116,9 +1145,7 @@
       buildInfoEl.textContent = t("buildInfo");
       baseNameInputEl.placeholder = t("baseNamePlaceholder");
       langToggleLabelEl.textContent = currentLang === "tr" ? "DE" : "TR";
-      autoModeSelectEl.options[0].textContent = t("autoModePhoto");
-      autoModeSelectEl.options[1].textContent = t("autoModeVideo");
-
+      updateAutoModeButtonUi();
       updateUiState();
       renderGallery();
     }
@@ -1320,11 +1347,12 @@
     }
 
     function updateAutoButtonUi() {
-      autoToggleIconEl.textContent = autoCaptureRunning ? "🛑" : "🟡";
-      autoToggleLabelEl.textContent = autoCaptureRunning ? t("autoStop") : t("autoStart");
-      autoToggleBtnEl.classList.toggle("auto-running", autoCaptureRunning);
-      autoToggleBtnEl.classList.toggle("danger", autoCaptureRunning);
-      autoToggleBtnEl.classList.toggle("warning", !autoCaptureRunning);
+      const isRunning = autoCaptureRunning;
+      autoToggleIconEl.textContent = isRunning ? "🛑" : (autoCaptureMode === "video" ? "🎥" : "📸");
+      autoToggleLabelEl.textContent = isRunning ? getAutoStopLabel() : getAutoStartLabel();
+      autoToggleBtnEl.classList.toggle("auto-running", isRunning);
+      autoToggleBtnEl.classList.toggle("danger", isRunning);
+      autoToggleBtnEl.classList.toggle("warning", !isRunning);
     }
 
     function updateFolderUi() {
@@ -1341,7 +1369,7 @@
       const isRecording = Boolean(mediaRecorder && mediaRecorder.state === "recording");
 
       autoToggleBtnEl.disabled = !hasStream || isRecording;
-      autoModeSelectEl.disabled = autoCaptureRunning;
+      autoModeToggleBtnEl.disabled = autoCaptureRunning || isRecording;
       autoDelayInputEl.disabled = autoCaptureRunning;
       autoIntervalInputEl.disabled = autoCaptureRunning;
       autoCountInputEl.disabled = autoCaptureRunning;
@@ -1359,6 +1387,7 @@
           )
         : t("autoOff");
 
+      updateAutoModeButtonUi();
       updateAutoButtonUi();
     }
 
@@ -1679,18 +1708,23 @@
       const items = [...galleryItems].sort((a, b) => b.createdAt - a.createdAt);
 
       for (const item of items) {
+        const itemId = item.id;
         const card = document.createElement("div");
         card.className = `item-card${item.selected ? " selected" : ""}`;
 
         card.addEventListener("click", event => {
           if (event.target.closest("button")) return;
-          item.selected = !item.selected;
+          const targetItem = galleryItems.find(entry => entry.id === itemId);
+          if (!targetItem) return;
+          targetItem.selected = !targetItem.selected;
           renderGallery();
         });
 
         card.addEventListener("dblclick", event => {
           if (event.target.closest("button")) return;
-          openPreviewModal(item);
+          const targetItem = galleryItems.find(entry => entry.id === itemId);
+          if (!targetItem) return;
+          openPreviewModal(targetItem);
         });
 
         const preview = document.createElement("div");
@@ -1742,8 +1776,10 @@
         saveBtn.innerHTML = `<span class="btn-icon">💾</span><span class="btn-label">${t("cardSave")}</span>`;
         saveBtn.addEventListener("click", async event => {
           event.stopPropagation();
+          const targetItem = galleryItems.find(entry => entry.id === itemId);
+          if (!targetItem) return;
           try {
-            await saveSingleItem(item);
+            await saveSingleItem(targetItem);
           } catch (error) {
             handleError(error);
           }
@@ -1754,7 +1790,7 @@
         del.innerHTML = `<span class="btn-icon">🗑️</span><span class="btn-label">${t("cardDelete")}</span>`;
         del.addEventListener("click", async event => {
           event.stopPropagation();
-          await deleteGalleryItemsByIds([item.id]);
+          await deleteSingleGalleryItem(itemId);
         });
 
         actions.append(saveBtn, del);
@@ -2009,13 +2045,8 @@
     }
 
     async function createTimedVideoCapture(durationSeconds, sourceLabel = "auto") {
-      if (!currentStream) {
-        throw new Error(t("streamRequired"));
-      }
-
-      if (!selectedRecordingMimeType) {
-        throw new Error(t("mp4NotSupported"));
-      }
+      if (!currentStream) throw new Error(t("streamRequired"));
+      if (!selectedRecordingMimeType) throw new Error(t("mp4NotSupported"));
 
       const localChunks = [];
       const startedAt = Date.now();
@@ -2149,7 +2180,6 @@
     }
 
     function startAutoCaptureCountdown() {
-      autoCaptureMode = autoModeSelectEl.value;
       autoCaptureDelaySeconds = readPositiveInt(autoDelayInputEl, 6);
       autoCaptureIntervalSeconds = readPositiveInt(autoIntervalInputEl, 3);
       autoCaptureTotal = readPositiveInt(autoCountInputEl, 6);
@@ -2338,6 +2368,12 @@
       setStatus(t("deletedItems", { count: ids.length }));
     }
 
+    async function deleteSingleGalleryItem(id) {
+      const target = galleryItems.find(item => item.id === id);
+      if (!target) return;
+      await deleteGalleryItemsByIds([id]);
+    }
+
     async function saveSelectedToFolder() {
       const items = getSelectedGalleryItems();
       if (!items.length) throw new Error(t("selectedFirst"));
@@ -2425,6 +2461,12 @@
       }
     });
 
+    autoModeToggleBtnEl.addEventListener("click", () => {
+      if (autoCaptureRunning) return;
+      autoCaptureMode = autoCaptureMode === "photo" ? "video" : "photo";
+      updateUiState();
+    });
+
     autoToggleBtnEl.addEventListener("click", () => {
       try {
         ensureAudioContext();
@@ -2476,12 +2518,8 @@
     deleteSelectedBtnEl.addEventListener("click", async () => {
       try {
         const ids = getSelectedGalleryItems().map(item => item.id);
-        if (!ids.length) {
-          throw new Error(t("selectedFirst"));
-        }
-        if (!window.confirm(t("confirmDeleteSelected"))) {
-          return;
-        }
+        if (!ids.length) throw new Error(t("selectedFirst"));
+        if (!window.confirm(t("confirmDeleteSelected"))) return;
         await deleteGalleryItemsByIds(ids);
       } catch (error) {
         handleError(error);
@@ -2491,9 +2529,7 @@
     clearCacheBtnEl.addEventListener("click", async () => {
       try {
         if (!galleryItems.length) return;
-        if (!window.confirm(t("confirmClearCache"))) {
-          return;
-        }
+        if (!window.confirm(t("confirmClearCache"))) return;
         await clearGalleryAndCache();
       } catch (error) {
         handleError(error);
@@ -2559,7 +2595,7 @@
           mime: selectedRecordingMimeType || "MP4 desteklenmiyor"
         });
         resetRecordingDuration();
-        autoModeSelectEl.value = "photo";
+        autoCaptureMode = "photo";
         autoDelayInputEl.value = "6";
         autoIntervalInputEl.value = "3";
         autoCountInputEl.value = "6";
