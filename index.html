@@ -629,7 +629,7 @@
         <h1 id="appTitle">PNG + MP4 galeri, cache, klasöre kaydetme</h1>
       </div>
       <div class="topbar-actions">
-        <div class="muted" id="buildInfo">v1.12 • Yazılım güncelleme: 02.04.2026 15:25:00</div>
+        <div class="muted" id="buildInfo">v1.13 • Yazılım güncelleme: 02.04.2026 15:40:00</div>
         <button id="langToggleBtn" class="lang-btn" title="Deutsch / Türkçe">
           <span class="btn-icon">🇩🇪</span>
           <span class="btn-label" id="langToggleLabel">DE</span>
@@ -804,8 +804,8 @@
   </div>
 
   <script>
-    const APP_VERSION = "1.12";
-    const APP_UPDATED_AT = "02.04.2026 15:25:00";
+    const APP_VERSION = "1.13";
+    const APP_UPDATED_AT = "02.04.2026 15:40:00";
 
     const translations = {
       tr: {
@@ -1184,7 +1184,7 @@
 
     function createTimeStampFilePart(timestamp) {
       const d = new Date(timestamp);
-      return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}_${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
+      return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}_${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}_${String(d.getMilliseconds()).padStart(3, "0")}`;
     }
 
     function sanitizeBaseName(name) {
@@ -1195,6 +1195,16 @@
         .replace(/_+/g, "_")
         .replace(/^[_\-.]+|[_\-.]+$/g, "")
         .slice(0, 80) || "capture";
+    }
+
+    function generateUniqueId(prefix) {
+      const now = Date.now();
+      const randomPart = Math.random().toString(36).slice(2, 8);
+      return `${prefix}_${createTimeStampFilePart(now)}_${randomPart}`;
+    }
+
+    function findGalleryItemByUid(uid) {
+      return galleryItems.find(item => item.uid === uid) || null;
     }
 
     function bytesToLabel(bytes) {
@@ -1574,7 +1584,9 @@
     async function saveItemToCache(item) {
       await tx(galleryDb, GALLERY_STORE, "readwrite", store => {
         store.put({
-          id: item.id,
+          id: item.uid,
+          uid: item.uid,
+          displayId: item.displayId || item.id || item.uid,
           kind: item.kind,
           blob: item.blob,
           createdAt: item.createdAt,
@@ -1624,6 +1636,7 @@
     async function addGalleryItem(itemData) {
       const item = {
         ...itemData,
+        uid: itemData.uid || generateUniqueId(itemData.kind === "video" ? "video" : "image"),
         selected: false,
         objectUrl: createObjectUrl(itemData.blob)
       };
@@ -1641,6 +1654,9 @@
         .sort((a, b) => a.createdAt - b.createdAt)
         .map(record => ({
           ...record,
+          uid: record.uid || record.id,
+          id: record.displayId || record.id,
+          displayId: record.displayId || record.id,
           selected: false,
           objectUrl: createObjectUrl(record.blob)
         }));
@@ -1650,13 +1666,13 @@
     }
 
     function openPreviewModal(item) {
-      modalTitleEl.textContent = `${item.id} • ${item.createdAtLabel}`;
+      modalTitleEl.textContent = `${item.displayId || item.id} • ${item.createdAtLabel}`;
       modalBodyEl.innerHTML = "";
 
       if (item.kind === "image") {
         const img = document.createElement("img");
         img.src = item.objectUrl;
-        img.alt = item.id;
+        img.alt = item.displayId || item.id;
         modalBodyEl.appendChild(img);
       } else {
         const video = document.createElement("video");
@@ -1678,9 +1694,11 @@
 
     async function saveSingleItem(item) {
       const previousSelections = galleryItems.map(entry => entry.selected);
+
       galleryItems.forEach(entry => {
-        entry.selected = entry.id === item.id;
+        entry.selected = entry.uid === item.uid;
       });
+
       renderGallery();
 
       try {
@@ -1708,13 +1726,13 @@
       const items = [...galleryItems].sort((a, b) => b.createdAt - a.createdAt);
 
       for (const item of items) {
-        const itemId = item.id;
+        const itemUid = item.uid;
         const card = document.createElement("div");
         card.className = `item-card${item.selected ? " selected" : ""}`;
 
         card.addEventListener("click", event => {
           if (event.target.closest("button")) return;
-          const targetItem = galleryItems.find(entry => entry.id === itemId);
+          const targetItem = findGalleryItemByUid(itemUid);
           if (!targetItem) return;
           targetItem.selected = !targetItem.selected;
           renderGallery();
@@ -1722,7 +1740,7 @@
 
         card.addEventListener("dblclick", event => {
           if (event.target.closest("button")) return;
-          const targetItem = galleryItems.find(entry => entry.id === itemId);
+          const targetItem = findGalleryItemByUid(itemUid);
           if (!targetItem) return;
           openPreviewModal(targetItem);
         });
@@ -1733,7 +1751,7 @@
         if (item.kind === "image") {
           const img = document.createElement("img");
           img.src = item.objectUrl;
-          img.alt = item.id;
+          img.alt = item.displayId || item.id;
           preview.appendChild(img);
         } else {
           const vid = document.createElement("video");
@@ -1762,7 +1780,7 @@
 
         const itemName = document.createElement("div");
         itemName.className = "item-name";
-        itemName.textContent = item.id;
+        itemName.textContent = item.displayId || item.id;
 
         const itemDate = document.createElement("div");
         itemDate.className = "item-date";
@@ -1776,7 +1794,7 @@
         saveBtn.innerHTML = `<span class="btn-icon">💾</span><span class="btn-label">${t("cardSave")}</span>`;
         saveBtn.addEventListener("click", async event => {
           event.stopPropagation();
-          const targetItem = galleryItems.find(entry => entry.id === itemId);
+          const targetItem = findGalleryItemByUid(itemUid);
           if (!targetItem) return;
           try {
             await saveSingleItem(targetItem);
@@ -1790,7 +1808,7 @@
         del.innerHTML = `<span class="btn-icon">🗑️</span><span class="btn-label">${t("cardDelete")}</span>`;
         del.addEventListener("click", async event => {
           event.stopPropagation();
-          await deleteSingleGalleryItem(itemId);
+          await deleteSingleGalleryItem(itemUid);
         });
 
         actions.append(saveBtn, del);
@@ -2025,9 +2043,12 @@
       const blob = await getCanvasBlob(canvas, "image/png");
       const createdAt = Date.now();
       const prefix = sourceLabel === "auto" ? "auto_image" : "image";
+      const displayId = `${prefix}_${createTimeStampFilePart(createdAt)}`;
 
       await addGalleryItem({
-        id: `${prefix}_${createTimeStampFilePart(createdAt)}`,
+        uid: generateUniqueId(prefix),
+        id: displayId,
+        displayId,
         kind: "image",
         blob,
         createdAt,
@@ -2080,9 +2101,12 @@
 
       const blob = new Blob(localChunks, { type: selectedRecordingMimeType });
       const createdAt = Date.now();
+      const displayId = `${sourceLabel}_video_${createTimeStampFilePart(createdAt)}`;
 
       await addGalleryItem({
-        id: `${sourceLabel}_video_${createTimeStampFilePart(createdAt)}`,
+        uid: generateUniqueId("video"),
+        id: displayId,
+        displayId,
         kind: "video",
         blob,
         createdAt,
@@ -2314,9 +2338,12 @@
 
         const blob = new Blob(recordedChunks, { type: selectedRecordingMimeType });
         const createdAt = Date.now();
+        const displayId = `video_${createTimeStampFilePart(createdAt)}`;
 
         await addGalleryItem({
-          id: `video_${createTimeStampFilePart(createdAt)}`,
+          uid: generateUniqueId("video"),
+          id: displayId,
+          displayId,
           kind: "video",
           blob,
           createdAt,
@@ -2353,25 +2380,25 @@
       setStatus(t("recordStarted", { mime: selectedRecordingMimeType }));
     }
 
-    async function deleteGalleryItemsByIds(ids) {
-      const idSet = new Set(ids);
+    async function deleteGalleryItemsByIds(uids) {
+      const uidSet = new Set(uids);
 
       galleryItems.forEach(item => {
-        if (idSet.has(item.id) && item.objectUrl) {
+        if (uidSet.has(item.uid) && item.objectUrl) {
           URL.revokeObjectURL(item.objectUrl);
         }
       });
 
-      galleryItems = galleryItems.filter(item => !idSet.has(item.id));
-      await deleteItemsFromCache(ids);
+      galleryItems = galleryItems.filter(item => !uidSet.has(item.uid));
+      await deleteItemsFromCache(uids);
       renderGallery();
-      setStatus(t("deletedItems", { count: ids.length }));
+      setStatus(t("deletedItems", { count: uids.length }));
     }
 
-    async function deleteSingleGalleryItem(id) {
-      const target = galleryItems.find(item => item.id === id);
+    async function deleteSingleGalleryItem(uid) {
+      const target = findGalleryItemByUid(uid);
       if (!target) return;
-      await deleteGalleryItemsByIds([id]);
+      await deleteGalleryItemsByIds([uid]);
     }
 
     async function saveSelectedToFolder() {
@@ -2517,7 +2544,7 @@
 
     deleteSelectedBtnEl.addEventListener("click", async () => {
       try {
-        const ids = getSelectedGalleryItems().map(item => item.id);
+        const ids = getSelectedGalleryItems().map(item => item.uid);
         if (!ids.length) throw new Error(t("selectedFirst"));
         if (!window.confirm(t("confirmDeleteSelected"))) return;
         await deleteGalleryItemsByIds(ids);
