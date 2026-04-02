@@ -1,4 +1,4 @@
-<!doctype html>
+﻿﻿<!doctype html>
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
@@ -19,9 +19,9 @@
       --warning: #f0b429;
       --selected: #28476f;
       --overlay: rgba(0, 0, 0, 0.78);
-      --btn-top: #2b3240;
-      --btn-bottom: #1a202b;
-      --btn-border: #3a4250;
+      --btn-top: #313847;
+      --btn-bottom: #1c222d;
+      --btn-border: #3b4352;
     }
 
     * {
@@ -132,14 +132,17 @@
 
     .auto-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(110px, 140px)) minmax(170px, 1fr) minmax(200px, 240px);
+      grid-template-columns: repeat(3, minmax(110px, 140px)) minmax(170px, 1fr);
       gap: 8px;
       align-items: end;
     }
 
     .gallery-actions {
       display: grid;
-      grid-template-columns: minmax(170px, 220px) minmax(220px, 260px) repeat(3, minmax(0, 1fr)) minmax(170px, 1fr);
+      grid-template-columns:
+        minmax(170px, 220px)
+        minmax(220px, 260px)
+        repeat(4, minmax(0, 1fr));
       gap: 8px;
       align-items: end;
     }
@@ -154,7 +157,7 @@
     input,
     select,
     button {
-      min-height: 42px;
+      min-height: 44px;
       border-radius: 12px;
       border: 1px solid var(--border);
       background: #10131a;
@@ -171,6 +174,7 @@
 
     input[type="number"] {
       appearance: textfield;
+      -moz-appearance: textfield;
     }
 
     input[type="number"]::-webkit-outer-spin-button,
@@ -191,13 +195,14 @@
       text-align: center;
       padding: 10px 14px;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01)),
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
         linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
       border: 1px solid var(--btn-border);
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -1px 0 rgba(0,0,0,0.25),
         0 1px 1px rgba(0,0,0,0.35),
-        0 6px 16px rgba(0,0,0,0.18);
+        0 8px 18px rgba(0,0,0,0.16);
       transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
     }
 
@@ -210,8 +215,8 @@
     button:active:not(:disabled) {
       transform: translateY(1px);
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.05),
-        0 1px 4px rgba(0,0,0,0.28);
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 2px 6px rgba(0,0,0,0.25);
     }
 
     button:disabled,
@@ -222,13 +227,14 @@
     }
 
     .btn-icon {
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1;
       flex: 0 0 auto;
     }
 
     .btn-label {
       min-width: 0;
+      font-weight: 600;
     }
 
     .success {
@@ -245,15 +251,16 @@
 
     .recording {
       animation: pulse 1.2s infinite;
-      border-color: rgba(255, 107, 107, 0.8) !important;
+      border-color: rgba(255, 107, 107, 0.85) !important;
     }
 
     .auto-running {
       border-color: rgba(240, 180, 41, 0.85) !important;
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -1px 0 rgba(0,0,0,0.25),
         0 1px 1px rgba(0,0,0,0.35),
-        0 6px 16px rgba(240, 180, 41, 0.14);
+        0 8px 18px rgba(240,180,41,0.12);
     }
 
     @keyframes pulse {
@@ -606,9 +613,9 @@
               <span class="btn-icon" id="autoToggleIcon">🟡</span>
               <span class="btn-label" id="autoToggleLabel">Oto Capture Başlat</span>
             </button>
-
-            <div class="hint" id="autoInfo">Oto capture kapalı</div>
           </div>
+
+          <div class="hint" id="autoInfo" style="margin-top:8px;">Oto capture kapalı</div>
         </section>
 
         <section class="card preview-card">
@@ -651,8 +658,8 @@
             <input id="baseNameInput" type="text" value="capture" placeholder="Dosya adı" />
 
             <button id="saveSelectedBtn" class="success" disabled>
-              <span class="btn-icon">📁</span>
-              <span class="btn-label">Seçili Klasöre Kaydet</span>
+              <span class="btn-icon" id="saveSelectedIcon">📁</span>
+              <span class="btn-label" id="saveSelectedLabel">Klasör Seç ve Kaydet</span>
             </button>
 
             <button id="selectAllBtn" disabled>
@@ -668,6 +675,11 @@
             <button id="deleteSelectedBtn" class="danger" disabled>
               <span class="btn-icon">🗑️</span>
               <span class="btn-label">Seçilenleri Sil</span>
+            </button>
+
+            <button id="clearCacheBtn" class="danger" disabled>
+              <span class="btn-icon">🔥</span>
+              <span class="btn-label">Cache Temizle</span>
             </button>
 
             <div class="hint" id="folderInfo">Klasör seçilmedi</div>
@@ -705,11 +717,16 @@
     const recordToggleBtnEl = document.getElementById("recordToggleBtn");
     const recordToggleIconEl = document.getElementById("recordToggleIcon");
     const recordToggleLabelEl = document.getElementById("recordToggleLabel");
+
     const selectAllBtnEl = document.getElementById("selectAllBtn");
     const clearSelectionBtnEl = document.getElementById("clearSelectionBtn");
     const deleteSelectedBtnEl = document.getElementById("deleteSelectedBtn");
+    const clearCacheBtnEl = document.getElementById("clearCacheBtn");
     const saveSelectedBtnEl = document.getElementById("saveSelectedBtn");
+    const saveSelectedIconEl = document.getElementById("saveSelectedIcon");
+    const saveSelectedLabelEl = document.getElementById("saveSelectedLabel");
     const baseNameInputEl = document.getElementById("baseNameInput");
+
     const statusEl = document.getElementById("status");
     const deviceInfoEl = document.getElementById("deviceInfo");
     const resolutionInfoEl = document.getElementById("resolutionInfo");
@@ -721,6 +738,7 @@
     const folderInfoEl = document.getElementById("folderInfo");
     const liveInfoEl = document.getElementById("liveInfo");
     const buildInfoEl = document.getElementById("buildInfo");
+
     const previewModalEl = document.getElementById("previewModal");
     const modalTitleEl = document.getElementById("modalTitle");
     const modalBodyEl = document.getElementById("modalBody");
@@ -742,6 +760,7 @@
     let recordingStartedAt = null;
     let recordingTimerId = null;
     let permissionGranted = false;
+
     let galleryDb = null;
     let settingsDb = null;
     let isCacheReady = false;
@@ -960,6 +979,11 @@
       folderInfoEl.textContent = folderHandle
         ? `Seçili klasör: ${folderName}`
         : "Klasör seçilmedi";
+
+      saveSelectedIconEl.textContent = folderHandle ? "💾" : "📁";
+      saveSelectedLabelEl.textContent = folderHandle
+        ? "Seçili Klasöre Kaydet"
+        : "Klasör Seç ve Kaydet";
     }
 
     function updateAutoCaptureUi() {
@@ -995,9 +1019,11 @@
       recordToggleBtnEl.disabled = !hasStream || !selectedRecordingMimeType || !isCacheReady || autoCaptureRunning;
       refreshBtnEl.disabled = !permissionGranted || autoCaptureRunning;
       grantBtnEl.disabled = permissionGranted && hasStream;
+
       selectAllBtnEl.disabled = !hasItems;
       clearSelectionBtnEl.disabled = selectedCount === 0;
       deleteSelectedBtnEl.disabled = selectedCount === 0;
+      clearCacheBtnEl.disabled = !hasItems;
       saveSelectedBtnEl.disabled = !supportsDirectoryWriting() || selectedCount === 0;
 
       updateFolderUi();
@@ -1130,19 +1156,17 @@
         return;
       }
 
-      if (folderHandle.queryPermission) {
-        const permission = await folderHandle.queryPermission({ mode: "readwrite" });
-        if (permission === "granted") {
-          return;
+      try {
+        if (folderHandle.queryPermission) {
+          const currentPermission = await folderHandle.queryPermission({ mode: "readwrite" });
+          if (currentPermission === "granted") return;
         }
-      }
 
-      if (folderHandle.requestPermission) {
-        const permission = await folderHandle.requestPermission({ mode: "readwrite" });
-        if (permission === "granted") {
-          return;
+        if (folderHandle.requestPermission) {
+          const requested = await folderHandle.requestPermission({ mode: "readwrite" });
+          if (requested === "granted") return;
         }
-      }
+      } catch (_) {}
 
       folderHandle = await window.showDirectoryPicker({ mode: "readwrite" });
       folderName = folderHandle.name || "seçili_klasör";
@@ -1185,6 +1209,19 @@
         ids.forEach(id => store.delete(id));
       });
       setCacheInfo(`Silindi • ${formatCompactTime(Date.now())}`);
+    }
+
+    async function clearGalleryAndCache() {
+      revokeGalleryObjectUrls();
+      galleryItems = [];
+
+      await tx(galleryDb, GALLERY_STORE, "readwrite", store => {
+        store.clear();
+      });
+
+      setCacheInfo(`Temizlendi • ${formatCompactTime(Date.now())}`);
+      renderGallery();
+      setStatus("Tüm cache temizlendi.");
     }
 
     async function addGalleryItem(itemData) {
@@ -1849,6 +1886,14 @@
       try {
         const ids = getSelectedGalleryItems().map(item => item.id);
         await deleteGalleryItemsByIds(ids);
+      } catch (error) {
+        handleError(error);
+      }
+    });
+
+    clearCacheBtnEl.addEventListener("click", async () => {
+      try {
+        await clearGalleryAndCache();
       } catch (error) {
         handleError(error);
       }
