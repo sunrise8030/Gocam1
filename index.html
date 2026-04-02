@@ -622,6 +622,7 @@
     let isCacheReady = false;
     let folderHandle = null;
     let folderName = "";
+    let audioCtx = null;
 
     let autoCaptureTimeoutId = null;
     let autoCaptureIntervalId = null;
@@ -631,6 +632,7 @@
     let autoCaptureTotal = 6;
     let autoCaptureDelaySeconds = 5;
     let autoCaptureIntervalSeconds = 3;
+    let autoCountdownIntervalId = null;
 
     const GALLERY_DB = "gopro-capture-studio-db";
     const GALLERY_STORE = "captures";
@@ -725,6 +727,74 @@
       if (!window.indexedDB) {
         throw new Error("Tarayıcı IndexedDB desteklemiyor.");
       }
+    }
+
+    function ensureAudioContext() {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      if (!audioCtx) {
+        audioCtx = new AudioCtx();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+      return audioCtx;
+    }
+
+    function playSimpleBeep() {
+      const ctx = ensureAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, now);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.14);
+    }
+
+    function playShutterClick() {
+      const ctx = ensureAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+      const bufferSize = Math.floor(ctx.sampleRate * 0.08);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      for (let i = 0; i < bufferSize; i += 1) {
+        const decay = 1 - i / bufferSize;
+        data[i] = (Math.random() * 2 - 1) * decay * 0.45;
+      }
+
+      const source = ctx.createBufferSource();
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+
+      source.buffer = buffer;
+      filter.type = "highpass";
+      filter.frequency.setValueAtTime(1200, now);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.7, now + 0.002);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      source.start(now);
+      source.stop(now + 0.09);
     }
 
     function supportsDirectoryWriting() {
@@ -1164,6 +1234,13 @@
       updateUiState();
     }
 
+    function stopAutoCountdownTimer() {
+      if (autoCountdownIntervalId !== null) {
+        clearInterval(autoCountdownIntervalId);
+        autoCountdownIntervalId = null;
+      }
+    }
+
     function stopAutoCaptureTimers() {
       if (autoCaptureTimeoutId !== null) {
         clearTimeout(autoCaptureTimeoutId);
@@ -1173,6 +1250,7 @@
         clearInterval(autoCaptureIntervalId);
         autoCaptureIntervalId = null;
       }
+      stopAutoCountdownTimer();
     }
 
     function finishAutoCapture(message = "Oto capture durduruldu.") {
@@ -1285,7 +1363,6 @@
 
       const blob = await getCanvasBlob(canvas, "image/png");
       const createdAt = Date.now();
-
       const prefix = sourceLabel === "auto" ? "auto_image" : "image";
 
       await addGalleryItem({
@@ -1302,6 +1379,7 @@
         deviceLabel: getSelectedDeviceLabel()
       });
 
+      playShutterClick();
       return { width, height, createdAt };
     }
 
@@ -1340,11 +1418,23 @@
       autoCaptureDelaySeconds = Number(autoDelaySelectEl.value);
       autoCaptureIntervalSeconds = Number(autoIntervalSelectEl.value);
 
-      autoInfoEl.textContent = `${autoCaptureDelaySeconds} sn sonra başlayacak • ${autoCaptureIntervalSeconds} sn aralık • ${autoCaptureTotal} foto`;
+      let countdown = autoCaptureDelaySeconds;
+      autoInfoEl.textContent = `${countdown} sn sonra başlayacak • ${autoCaptureIntervalSeconds} sn aralık • ${autoCaptureTotal} foto`;
       updateUiState();
+
+      playSimpleBeep();
+
+      autoCountdownIntervalId = window.setInterval(() => {
+        countdown -= 1;
+        if (countdown > 0) {
+          playSimpleBeep();
+          autoInfoEl.textContent = `${countdown} sn sonra başlayacak • ${autoCaptureIntervalSeconds} sn aralık • ${autoCaptureTotal} foto`;
+        }
+      }, 1000);
 
       autoCaptureTimeoutId = window.setTimeout(async () => {
         autoCaptureTimeoutId = null;
+        stopAutoCountdownTimer();
 
         if (!autoCaptureRunning) return;
 
@@ -1365,6 +1455,7 @@
               return;
             }
 
+            playSimpleBeep();
             try {
               await runAutoCaptureStep();
             } catch (error) {
@@ -1553,6 +1644,7 @@
 
     grantBtnEl.addEventListener("click", async () => {
       try {
+        ensureAudioContext();
         await initializeAndAutoStart();
       } catch (error) {
         handleError(error);
@@ -1582,6 +1674,7 @@
 
     captureBtnEl.addEventListener("click", async () => {
       try {
+        ensureAudioContext();
         await captureFrame();
       } catch (error) {
         handleError(error);
@@ -1590,6 +1683,7 @@
 
     autoStartBtnEl.addEventListener("click", () => {
       try {
+        ensureAudioContext();
         if (!currentStream) throw new Error("Önce stream açılmalı.");
         if (autoCaptureRunning) throw new Error("Oto capture zaten çalışıyor.");
         startAutoCaptureCountdown();
