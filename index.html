@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>GoPro Capture Studio</title>
   <style>
     :root {
@@ -17,8 +17,8 @@
       --danger: #ff6b6b;
       --success: #57d38c;
       --warning: #f0b429;
-      --selected: #28476f;
-      --overlay: rgba(0, 0, 0, 0.78);
+      --selected: #335a8e;
+      --overlay: rgba(0, 0, 0, 0.8);
       --btn-top: #313847;
       --btn-bottom: #1c222d;
       --btn-border: #3b4352;
@@ -95,7 +95,7 @@
     .workspace {
       min-height: 0;
       display: grid;
-      grid-template-columns: 1.15fr 1fr;
+      grid-template-columns: 1.12fr 1fr;
       gap: 10px;
     }
 
@@ -125,14 +125,14 @@
 
     .controls-grid {
       display: grid;
-      grid-template-columns: minmax(200px, 260px) repeat(4, minmax(0, 1fr));
+      grid-template-columns: minmax(210px, 270px) repeat(4, minmax(0, 1fr));
       gap: 8px;
       align-items: end;
     }
 
     .auto-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(110px, 140px)) minmax(170px, 1fr);
+      grid-template-columns: repeat(3, minmax(110px, 140px)) minmax(190px, 1fr);
       gap: 8px;
       align-items: end;
     }
@@ -140,12 +140,16 @@
     .gallery-actions {
       display: grid;
       grid-template-columns:
-        minmax(160px, 210px)
-        minmax(170px, 210px)
-        minmax(210px, 250px)
+        minmax(150px, 190px)
+        minmax(170px, 200px)
+        minmax(170px, 220px)
         repeat(4, minmax(0, 1fr));
       gap: 8px;
-      align-items: end;
+      align-items: stretch;
+    }
+
+    .gallery-actions > * {
+      min-height: 46px;
     }
 
     label.field {
@@ -228,7 +232,7 @@
     }
 
     .btn-icon {
-      font-size: 24px;
+      font-size: 26px;
       line-height: 1;
       flex: 0 0 auto;
     }
@@ -341,6 +345,8 @@
       font-size: 12px;
       color: var(--muted);
       min-height: 20px;
+      display: flex;
+      align-items: center;
     }
 
     .gallery-card {
@@ -371,8 +377,8 @@
     }
 
     .item-card {
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border: 2px solid rgba(110, 168, 255, 0.16);
+      border-radius: 14px;
       background: #11151d;
       overflow: hidden;
       display: grid;
@@ -383,13 +389,15 @@
     }
 
     .item-card:hover {
-      border-color: var(--accent);
+      border-color: rgba(110, 168, 255, 0.5);
       transform: translateY(-1px);
     }
 
     .item-card.selected {
-      border-color: #6ea8ff;
-      box-shadow: 0 0 0 2px rgba(110, 168, 255, 0.2) inset;
+      border-color: #7db5ff;
+      box-shadow:
+        0 0 0 2px rgba(125,181,255,0.22),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
       background: var(--selected);
     }
 
@@ -454,6 +462,22 @@
       margin-top: 4px;
     }
 
+    .mini-btn {
+      min-height: 36px;
+      padding: 6px 10px;
+      gap: 8px;
+      border-radius: 10px;
+    }
+
+    .mini-btn .btn-icon {
+      font-size: 18px;
+    }
+
+    .mini-btn .btn-label {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
     .modal {
       position: fixed;
       inset: 0;
@@ -509,7 +533,7 @@
       background: #000;
     }
 
-    @media (max-width: 1320px) {
+    @media (max-width: 1360px) {
       .controls-grid,
       .auto-grid,
       .gallery-actions {
@@ -545,10 +569,7 @@
         max-height: none;
       }
 
-      button {
-        white-space: normal;
-      }
-
+      button,
       .btn-label {
         white-space: normal;
       }
@@ -562,7 +583,7 @@
         <div class="badge">GoPro Capture Studio</div>
         <h1>PNG + MP4 galeri, cache, klasöre kaydetme</h1>
       </div>
-      <div class="muted" id="buildInfo">Son güncelleme: 2026-04-02 11:35</div>
+      <div class="muted" id="buildInfo">v1.08 • Yazılım güncelleme: 02.04.2026 14:10:00 (Almanya)</div>
     </section>
 
     <section class="workspace">
@@ -723,7 +744,8 @@
   </div>
 
   <script>
-    const APP_UPDATED_AT = "2026-04-02 11:35";
+    const APP_VERSION = "1.08";
+    const APP_UPDATED_AT = "02.04.2026 14:10:00 (Almanya)";
 
     const videoEl = document.getElementById("video");
     const deviceSelectEl = document.getElementById("videoDevice");
@@ -997,10 +1019,8 @@
         ? `Seçili klasör: ${folderName}`
         : "Klasör seçilmedi";
 
-      saveSelectedIconEl.textContent = folderHandle ? "💾" : "📁";
-      saveSelectedLabelEl.textContent = folderHandle
-        ? "Seçilenleri Kaydet"
-        : "Önce Klasör Seç";
+      saveSelectedIconEl.textContent = "💾";
+      saveSelectedLabelEl.textContent = "Seçilenleri Kaydet";
     }
 
     function updateAutoCaptureUi() {
@@ -1072,6 +1092,7 @@
 
     function pickSupportedMp4MimeType() {
       const mp4Types = [
+        "video/mp4;codecs=hvc1,mp4a.40.2",
         "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
         "video/mp4;codecs=avc1.4D401E,mp4a.40.2",
         "video/mp4;codecs=avc1,mp4a.40.2",
@@ -1303,6 +1324,23 @@
       modalBodyEl.innerHTML = "";
     }
 
+    async function saveSingleItem(item) {
+      const previousSelections = galleryItems.map(entry => entry.selected);
+      galleryItems.forEach(entry => {
+        entry.selected = entry.id === item.id;
+      });
+      renderGallery();
+
+      try {
+        await saveSelectedToFolder();
+      } finally {
+        galleryItems.forEach((entry, index) => {
+          entry.selected = previousSelections[index];
+        });
+        renderGallery();
+      }
+    }
+
     function renderGallery() {
       galleryEl.innerHTML = "";
 
@@ -1321,13 +1359,13 @@
         const card = document.createElement("div");
         card.className = `item-card${item.selected ? " selected" : ""}`;
 
-        card.addEventListener("click", (event) => {
+        card.addEventListener("click", event => {
           if (event.target.closest("button")) return;
           item.selected = !item.selected;
           renderGallery();
         });
 
-        card.addEventListener("dblclick", (event) => {
+        card.addEventListener("dblclick", event => {
           if (event.target.closest("button")) return;
           openPreviewModal(item);
         });
@@ -1376,15 +1414,27 @@
         const actions = document.createElement("div");
         actions.className = "item-actions";
 
+        const saveBtn = document.createElement("button");
+        saveBtn.className = "mini-btn success";
+        saveBtn.innerHTML = '<span class="btn-icon">💾</span><span class="btn-label">Kaydet</span>';
+        saveBtn.addEventListener("click", async event => {
+          event.stopPropagation();
+          try {
+            await saveSingleItem(item);
+          } catch (error) {
+            handleError(error);
+          }
+        });
+
         const del = document.createElement("button");
-        del.className = "danger";
+        del.className = "mini-btn danger";
         del.innerHTML = '<span class="btn-icon">🗑️</span><span class="btn-label">Sil</span>';
-        del.addEventListener("click", async (event) => {
+        del.addEventListener("click", async event => {
           event.stopPropagation();
           await deleteGalleryItemsByIds([item.id]);
         });
 
-        actions.append(del);
+        actions.append(saveBtn, del);
         body.append(itemName, itemDate, actions);
         card.append(preview, body);
         galleryEl.appendChild(card);
@@ -1725,7 +1775,9 @@
       mediaRecorder = new MediaRecorder(currentStream, { mimeType: selectedRecordingMimeType });
 
       mediaRecorder.addEventListener("dataavailable", event => {
-        if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+        if (event.data && event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
       });
 
       mediaRecorder.addEventListener("stop", async () => {
@@ -1777,8 +1829,11 @@
 
     async function deleteGalleryItemsByIds(ids) {
       const idSet = new Set(ids);
+
       galleryItems.forEach(item => {
-        if (idSet.has(item.id) && item.objectUrl) URL.revokeObjectURL(item.objectUrl);
+        if (idSet.has(item.id) && item.objectUrl) {
+          URL.revokeObjectURL(item.objectUrl);
+        }
       });
 
       galleryItems = galleryItems.filter(item => !idSet.has(item.id));
@@ -1941,13 +1996,13 @@
 
     closeModalBtnEl.addEventListener("click", closePreviewModal);
 
-    previewModalEl.addEventListener("click", (event) => {
+    previewModalEl.addEventListener("click", event => {
       if (event.target === previewModalEl) {
         closePreviewModal();
       }
     });
 
-    window.addEventListener("keydown", (event) => {
+    window.addEventListener("keydown", event => {
       if (event.key === "Escape" && previewModalEl.classList.contains("open")) {
         closePreviewModal();
       }
@@ -1982,7 +2037,7 @@
 
     (async function init() {
       try {
-        buildInfoEl.textContent = `Son güncelleme: ${APP_UPDATED_AT}`;
+        buildInfoEl.textContent = `v${APP_VERSION} • Yazılım güncelleme: ${APP_UPDATED_AT}`;
         ensureBrowserSupport();
         selectedRecordingMimeType = pickSupportedMp4MimeType();
         setMetaInfo({
