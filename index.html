@@ -41,7 +41,7 @@
     .app {
       height: calc(100vh - 20px);
       display: grid;
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto auto 1fr;
       gap: 10px;
     }
 
@@ -97,6 +97,13 @@
       margin-top: 8px;
     }
 
+    .auto-controls {
+      display: grid;
+      grid-template-columns: auto auto auto auto auto minmax(180px, 1fr);
+      gap: 8px;
+      align-items: center;
+    }
+
     select, input, button {
       height: 38px;
       border-radius: 10px;
@@ -141,6 +148,11 @@
     .recording {
       animation: pulse 1.2s infinite;
       border-color: rgba(255, 107, 107, 0.6) !important;
+    }
+
+    .auto-running {
+      border-color: rgba(240, 180, 41, 0.7) !important;
+      box-shadow: 0 0 0 2px rgba(240, 180, 41, 0.16) inset;
     }
 
     @keyframes pulse {
@@ -198,7 +210,7 @@
 
     .meta {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 8px;
     }
 
@@ -417,7 +429,8 @@
       }
 
       .controls,
-      .naming {
+      .naming,
+      .auto-controls {
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
@@ -441,6 +454,7 @@
 
       .controls,
       .naming,
+      .auto-controls,
       .meta {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -485,6 +499,27 @@
       </div>
     </section>
 
+    <section class="card" style="display:grid; gap:8px;">
+      <div class="auto-controls">
+        <select id="autoDelaySelect">
+          <option value="5">5 sn sonra başla</option>
+          <option value="10">10 sn sonra başla</option>
+        </select>
+
+        <select id="autoIntervalSelect">
+          <option value="3">3 sn aralık</option>
+          <option value="5">5 sn aralık</option>
+        </select>
+
+        <input id="autoCountInput" type="text" value="6 foto" disabled />
+
+        <button id="autoStartBtn" class="warning" disabled>Oto Capture Başlat</button>
+        <button id="autoStopBtn" class="danger" disabled>Oto Capture Durdur</button>
+
+        <div class="hint" id="autoInfo">Oto capture kapalı</div>
+      </div>
+    </section>
+
     <section class="workspace">
       <section class="left-pane">
         <section class="card preview-card">
@@ -504,10 +539,11 @@
             <div class="meta-card"><div class="meta-label">Kayıt formatı</div><div id="mimeInfo" class="meta-value">-</div></div>
             <div class="meta-card"><div class="meta-label">Kayıt süresi</div><div id="durationInfo" class="meta-value">00:00</div></div>
             <div class="meta-card"><div class="meta-label">Cache</div><div id="cacheInfo" class="meta-value">Hazır</div></div>
+            <div class="meta-card"><div class="meta-label">Oto capture</div><div id="autoStateInfo" class="meta-value">Kapalı</div></div>
           </div>
           <div id="status" class="status">Hazır.</div>
           <div class="hint">
-            Tek tık seçim yapar. Çift tık ön izleme penceresi açar. Sayfayı HTTPS altında aç.
+            Tek tık seçim yapar. Çift tık ön izleme penceresi açar. Oto capture 6 foto üretir.
           </div>
         </section>
       </section>
@@ -567,6 +603,14 @@
     const modalBodyEl = document.getElementById("modalBody");
     const closeModalBtnEl = document.getElementById("closeModalBtn");
 
+    const autoDelaySelectEl = document.getElementById("autoDelaySelect");
+    const autoIntervalSelectEl = document.getElementById("autoIntervalSelect");
+    const autoCountInputEl = document.getElementById("autoCountInput");
+    const autoStartBtnEl = document.getElementById("autoStartBtn");
+    const autoStopBtnEl = document.getElementById("autoStopBtn");
+    const autoInfoEl = document.getElementById("autoInfo");
+    const autoStateInfoEl = document.getElementById("autoStateInfo");
+
     let currentStream = null;
     let mediaRecorder = null;
     let recordedChunks = [];
@@ -578,6 +622,15 @@
     let isCacheReady = false;
     let folderHandle = null;
     let folderName = "";
+
+    let autoCaptureTimeoutId = null;
+    let autoCaptureIntervalId = null;
+    let autoCaptureRunning = false;
+    let autoCaptureStarted = false;
+    let autoCaptureRemaining = 0;
+    let autoCaptureTotal = 6;
+    let autoCaptureDelaySeconds = 5;
+    let autoCaptureIntervalSeconds = 3;
 
     const GALLERY_DB = "gopro-capture-studio-db";
     const GALLERY_STORE = "captures";
@@ -682,6 +735,18 @@
       folderInfoEl.textContent = folderHandle ? `Klasör: ${folderName}` : "Klasör seçilmedi";
     }
 
+    function updateAutoCaptureUi() {
+      const hasStream = Boolean(currentStream);
+      autoStartBtnEl.disabled = !hasStream || autoCaptureRunning || Boolean(mediaRecorder && mediaRecorder.state === "recording");
+      autoStopBtnEl.disabled = !autoCaptureRunning;
+      autoDelaySelectEl.disabled = autoCaptureRunning;
+      autoIntervalSelectEl.disabled = autoCaptureRunning;
+      autoStartBtnEl.classList.toggle("auto-running", autoCaptureRunning);
+      autoStateInfoEl.textContent = autoCaptureRunning
+        ? (autoCaptureStarted ? `Çalışıyor • ${autoCaptureRemaining}/${autoCaptureTotal}` : `Bekliyor • ${autoCaptureDelaySeconds} sn`)
+        : "Kapalı";
+    }
+
     function updateGalleryStats() {
       const selectedCount = galleryItems.filter(item => item.selected).length;
       galleryStatsEl.textContent = `${galleryItems.length} öğe${selectedCount ? ` • ${selectedCount} seçili` : ""}`;
@@ -694,12 +759,12 @@
       const hasItems = galleryItems.length > 0;
       const hasDevices = deviceSelectEl.options.length > 0 && deviceSelectEl.value;
 
-      deviceSelectEl.disabled = !permissionGranted || isRecording || !hasDevices;
-      captureBtnEl.disabled = !hasStream || isRecording || !isCacheReady;
-      recordBtnEl.disabled = !hasStream || isRecording || !selectedRecordingMimeType || !isCacheReady;
+      deviceSelectEl.disabled = !permissionGranted || isRecording || !hasDevices || autoCaptureRunning;
+      captureBtnEl.disabled = !hasStream || isRecording || !isCacheReady || autoCaptureRunning;
+      recordBtnEl.disabled = !hasStream || isRecording || !selectedRecordingMimeType || !isCacheReady || autoCaptureRunning;
       stopRecordBtnEl.disabled = !isRecording;
       stopStreamBtnEl.disabled = !hasStream;
-      refreshBtnEl.disabled = !permissionGranted;
+      refreshBtnEl.disabled = !permissionGranted || autoCaptureRunning;
       grantBtnEl.disabled = permissionGranted && hasStream;
       selectAllBtnEl.disabled = !hasItems;
       clearSelectionBtnEl.disabled = selectedCount === 0;
@@ -712,6 +777,7 @@
 
       updateFolderUi();
       updateGalleryStats();
+      updateAutoCaptureUi();
     }
 
     function setMetaInfo({ device = "-", resolution = "-", mime = "-" } = {}) {
@@ -909,17 +975,13 @@
         card.className = `item-card${item.selected ? " selected" : ""}`;
 
         card.addEventListener("click", (event) => {
-          if (event.target.closest("button")) {
-            return;
-          }
+          if (event.target.closest("button")) return;
           item.selected = !item.selected;
           renderGallery();
         });
 
         card.addEventListener("dblclick", (event) => {
-          if (event.target.closest("button")) {
-            return;
-          }
+          if (event.target.closest("button")) return;
           openPreviewModal(item);
         });
 
@@ -1079,9 +1141,7 @@
     async function stopRecordingIfNeeded(silent = false) {
       if (!mediaRecorder) {
         stopRecordingTimer();
-        if (silent) {
-          resetRecordingDuration();
-        }
+        if (silent) resetRecordingDuration();
         updateUiState();
         return;
       }
@@ -1100,17 +1160,33 @@
 
       mediaRecorder = null;
       stopRecordingTimer();
-      if (silent) {
-        resetRecordingDuration();
-      }
+      if (silent) resetRecordingDuration();
       updateUiState();
     }
 
-    function cleanupStream() {
-      if (!currentStream) {
-        return;
+    function stopAutoCaptureTimers() {
+      if (autoCaptureTimeoutId !== null) {
+        clearTimeout(autoCaptureTimeoutId);
+        autoCaptureTimeoutId = null;
       }
+      if (autoCaptureIntervalId !== null) {
+        clearInterval(autoCaptureIntervalId);
+        autoCaptureIntervalId = null;
+      }
+    }
 
+    function finishAutoCapture(message = "Oto capture durduruldu.") {
+      stopAutoCaptureTimers();
+      autoCaptureRunning = false;
+      autoCaptureStarted = false;
+      autoCaptureRemaining = 0;
+      autoInfoEl.textContent = "Oto capture kapalı";
+      updateUiState();
+      if (message) setStatus(message);
+    }
+
+    function cleanupStream() {
+      if (!currentStream) return;
       currentStream.getTracks().forEach(track => track.stop());
       currentStream = null;
       videoEl.pause();
@@ -1120,6 +1196,7 @@
     }
 
     async function stopCurrentStream() {
+      finishAutoCapture("");
       await stopRecordingIfNeeded(true);
       cleanupStream();
       setMetaInfo({
@@ -1137,6 +1214,7 @@
         throw new Error("Önce bir kamera seç.");
       }
 
+      finishAutoCapture("");
       await stopRecordingIfNeeded(true);
       cleanupStream();
 
@@ -1182,7 +1260,7 @@
       await startSelectedCamera();
     }
 
-    async function captureFrame() {
+    async function createPngCapture(sourceLabel = "manual") {
       if (!currentStream) {
         throw new Error("Önce kamera açılmalı.");
       }
@@ -1208,8 +1286,10 @@
       const blob = await getCanvasBlob(canvas, "image/png");
       const createdAt = Date.now();
 
+      const prefix = sourceLabel === "auto" ? "auto_image" : "image";
+
       await addGalleryItem({
-        id: `image_${createTimeStampFilePart(createdAt)}`,
+        id: `${prefix}_${createTimeStampFilePart(createdAt)}`,
         kind: "image",
         blob,
         createdAt,
@@ -1222,7 +1302,81 @@
         deviceLabel: getSelectedDeviceLabel()
       });
 
-      setStatus(`PNG capture eklendi.\nBoyut: ${width}x${height}\nTarih: ${formatDateTimeLabel(createdAt)}`);
+      return { width, height, createdAt };
+    }
+
+    async function captureFrame() {
+      const result = await createPngCapture("manual");
+      setStatus(`PNG capture eklendi.\nBoyut: ${result.width}x${result.height}\nTarih: ${formatDateTimeLabel(result.createdAt)}`);
+    }
+
+    async function runAutoCaptureStep() {
+      if (!autoCaptureRunning || !currentStream) {
+        finishAutoCapture("");
+        return;
+      }
+
+      if (autoCaptureRemaining <= 0) {
+        finishAutoCapture("Oto capture tamamlandı.");
+        return;
+      }
+
+      const stepNo = autoCaptureTotal - autoCaptureRemaining + 1;
+      const result = await createPngCapture("auto");
+      autoCaptureRemaining -= 1;
+
+      if (autoCaptureRemaining > 0) {
+        autoInfoEl.textContent = `${stepNo}/${autoCaptureTotal} tamamlandı • Sonraki ${autoCaptureIntervalSeconds} sn sonra`;
+        updateUiState();
+      } else {
+        finishAutoCapture(`Oto capture tamamlandı.\nToplam ${autoCaptureTotal} foto eklendi.\nSon boyut: ${result.width}x${result.height}`);
+      }
+    }
+
+    function startAutoCaptureCountdown() {
+      autoCaptureRunning = true;
+      autoCaptureStarted = false;
+      autoCaptureRemaining = autoCaptureTotal;
+      autoCaptureDelaySeconds = Number(autoDelaySelectEl.value);
+      autoCaptureIntervalSeconds = Number(autoIntervalSelectEl.value);
+
+      autoInfoEl.textContent = `${autoCaptureDelaySeconds} sn sonra başlayacak • ${autoCaptureIntervalSeconds} sn aralık • ${autoCaptureTotal} foto`;
+      updateUiState();
+
+      autoCaptureTimeoutId = window.setTimeout(async () => {
+        autoCaptureTimeoutId = null;
+
+        if (!autoCaptureRunning) return;
+
+        autoCaptureStarted = true;
+        autoInfoEl.textContent = `Başladı • 1/${autoCaptureTotal} çekiliyor...`;
+        updateUiState();
+
+        try {
+          await runAutoCaptureStep();
+
+          if (!autoCaptureRunning) return;
+          if (autoCaptureRemaining <= 0) return;
+
+          autoCaptureIntervalId = window.setInterval(async () => {
+            if (!autoCaptureRunning) return;
+            if (autoCaptureRemaining <= 0) {
+              finishAutoCapture("Oto capture tamamlandı.");
+              return;
+            }
+
+            try {
+              await runAutoCaptureStep();
+            } catch (error) {
+              handleError(error);
+              finishAutoCapture("Oto capture hata nedeniyle durdu.");
+            }
+          }, autoCaptureIntervalSeconds * 1000);
+        } catch (error) {
+          handleError(error);
+          finishAutoCapture("Oto capture hata nedeniyle durdu.");
+        }
+      }, autoCaptureDelaySeconds * 1000);
     }
 
     function getSelectedGalleryItems() {
@@ -1244,6 +1398,7 @@
         throw new Error("Kayıt zaten sürüyor.");
       }
 
+      finishAutoCapture("");
       recordedChunks = [];
       const recordingStartTime = Date.now();
 
@@ -1433,6 +1588,20 @@
       }
     });
 
+    autoStartBtnEl.addEventListener("click", () => {
+      try {
+        if (!currentStream) throw new Error("Önce stream açılmalı.");
+        if (autoCaptureRunning) throw new Error("Oto capture zaten çalışıyor.");
+        startAutoCaptureCountdown();
+      } catch (error) {
+        handleError(error);
+      }
+    });
+
+    autoStopBtnEl.addEventListener("click", () => {
+      finishAutoCapture("Oto capture durduruldu.");
+    });
+
     recordBtnEl.addEventListener("click", async () => {
       try {
         await startRecording();
@@ -1531,9 +1700,7 @@
     });
 
     navigator.mediaDevices?.addEventListener?.("devicechange", async () => {
-      if (!permissionGranted) {
-        return;
-      }
+      if (!permissionGranted) return;
 
       try {
         const ok = await populateVideoDevices();
@@ -1552,6 +1719,7 @@
     });
 
     window.addEventListener("beforeunload", () => {
+      stopAutoCaptureTimers();
       stopRecordingTimer();
       cleanupStream();
       revokeGalleryObjectUrls();
@@ -1560,6 +1728,7 @@
     (async function init() {
       try {
         buildInfoEl.textContent = `Son güncelleme: ${APP_UPDATED_AT}`;
+        autoCountInputEl.value = `${autoCaptureTotal} foto`;
         ensureBrowserSupport();
         selectedRecordingMimeType = pickSupportedMp4MimeType();
         setMetaInfo({
