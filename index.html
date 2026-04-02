@@ -16,8 +16,8 @@
       --danger: #ff6b6b;
       --success: #57d38c;
       --warning: #f0b429;
-      --selected: #2a4f82;
-      --overlay: rgba(0, 0, 0, 0.75);
+      --selected: #28476f;
+      --overlay: rgba(0, 0, 0, 0.78);
     }
 
     * {
@@ -41,7 +41,7 @@
     .app {
       height: calc(100vh - 20px);
       display: grid;
-      grid-template-rows: auto auto auto 1fr;
+      grid-template-rows: auto 1fr;
       gap: 10px;
     }
 
@@ -55,8 +55,8 @@
 
     .topbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 12px;
       flex-wrap: wrap;
     }
@@ -77,34 +77,78 @@
       font-size: 22px;
     }
 
+    h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
     .muted {
       color: var(--muted);
       font-size: 13px;
     }
 
-    .controls {
+    .workspace {
+      min-height: 0;
       display: grid;
-      grid-template-columns: minmax(190px, 240px) repeat(9, auto);
+      grid-template-columns: 1.15fr 1fr;
+      gap: 10px;
+    }
+
+    .left-pane,
+    .right-pane {
+      min-height: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .left-pane {
+      grid-template-rows: auto auto auto auto 1fr;
+    }
+
+    .right-pane {
+      grid-template-rows: auto 1fr;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: minmax(190px, 240px) repeat(5, auto);
       gap: 8px;
       align-items: center;
     }
 
-    .naming {
+    .auto-grid {
       display: grid;
-      grid-template-columns: minmax(180px, 220px) repeat(5, auto);
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-    }
-
-    .auto-controls {
-      display: grid;
-      grid-template-columns: auto auto auto auto auto minmax(180px, 1fr);
+      grid-template-columns: repeat(3, minmax(110px, 140px)) auto auto minmax(160px, 1fr);
       gap: 8px;
       align-items: center;
     }
 
-    select, input, button {
+    .gallery-actions {
+      display: grid;
+      grid-template-columns: minmax(180px, 220px) auto auto auto minmax(180px, 1fr);
+      gap: 8px;
+      align-items: center;
+    }
+
+    label.field {
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    button {
       height: 38px;
       border-radius: 10px;
       border: 1px solid var(--border);
@@ -114,6 +158,10 @@
       font-size: 13px;
     }
 
+    input[type="number"] {
+      appearance: textfield;
+    }
+
     button {
       cursor: pointer;
       background: #1b2230;
@@ -121,8 +169,8 @@
     }
 
     button:hover:not(:disabled),
-    select:hover,
-    input:hover {
+    input:hover,
+    select:hover {
       border-color: var(--accent);
     }
 
@@ -161,29 +209,11 @@
       100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
     }
 
-    .workspace {
-      min-height: 0;
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 10px;
-    }
-
-    .left-pane,
-    .right-pane {
-      min-height: 0;
-      display: grid;
-      gap: 10px;
-    }
-
-    .left-pane {
-      grid-template-rows: auto 1fr;
-    }
-
     .preview-card {
-      min-height: 0;
       display: grid;
       grid-template-rows: auto 1fr;
       gap: 8px;
+      min-height: 0;
     }
 
     .preview-box {
@@ -196,7 +226,7 @@
 
     .live-box {
       aspect-ratio: 16 / 9;
-      max-height: 40vh;
+      max-height: 42vh;
       min-height: 320px;
     }
 
@@ -211,25 +241,26 @@
     .meta {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
+      gap: 6px;
     }
 
     .meta-card {
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 10px;
       background: #11151d;
-      padding: 10px;
+      padding: 8px;
     }
 
     .meta-label {
       color: var(--muted);
-      font-size: 11px;
-      margin-bottom: 4px;
+      font-size: 10px;
+      margin-bottom: 3px;
     }
 
     .meta-value {
-      font-size: 13px;
+      font-size: 12px;
       word-break: break-word;
+      line-height: 1.25;
     }
 
     .status {
@@ -240,8 +271,13 @@
       color: var(--muted);
       white-space: pre-wrap;
       line-height: 1.35;
-      min-height: 74px;
+      min-height: 72px;
       font-size: 13px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
     }
 
     .gallery-card {
@@ -249,14 +285,6 @@
       display: grid;
       grid-template-rows: auto 1fr;
       gap: 8px;
-    }
-
-    .gallery-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
     }
 
     .gallery {
@@ -363,11 +391,6 @@
       margin-top: 4px;
     }
 
-    .hint {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
     .modal {
       position: fixed;
       inset: 0;
@@ -423,15 +446,11 @@
       background: #000;
     }
 
-    @media (max-width: 1200px) {
-      .workspace {
-        grid-template-columns: 1.1fr 1fr;
-      }
-
-      .controls,
-      .naming,
-      .auto-controls {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+    @media (max-width: 1280px) {
+      .controls-grid,
+      .auto-grid,
+      .gallery-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .meta {
@@ -439,7 +458,7 @@
       }
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 920px) {
       html, body {
         overflow: auto;
       }
@@ -452,11 +471,11 @@
         grid-template-columns: 1fr;
       }
 
-      .controls,
-      .naming,
-      .auto-controls,
+      .controls-grid,
+      .auto-grid,
+      .gallery-actions,
       .meta {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .live-box {
@@ -470,61 +489,60 @@
     <section class="card topbar">
       <div>
         <div class="badge">GoPro Capture Studio</div>
-        <h1>PNG + MP4 galeri, cache, klasöre yazma</h1>
+        <h1>PNG + MP4 galeri, cache, klasöre kaydetme</h1>
       </div>
-      <div class="muted" id="buildInfo">Son güncelleme: 2026-04-02 10:44</div>
-    </section>
-
-    <section class="card" style="display:grid; gap:8px;">
-      <div class="controls">
-        <select id="videoDevice" disabled></select>
-        <button id="grantBtn">İzin Ver ve Başlat</button>
-        <button id="refreshBtn">Yenile</button>
-        <button id="captureBtn" disabled>PNG Capture</button>
-        <button id="recordBtn" class="success" disabled>MP4 Başlat</button>
-        <button id="stopRecordBtn" class="danger" disabled>Durdur</button>
-        <button id="stopStreamBtn" class="danger" disabled>Stream Durdur</button>
-        <button id="selectAllBtn" disabled>Tümünü Seç</button>
-        <button id="clearSelectionBtn" class="warning" disabled>Seçimi Temizle</button>
-        <button id="deleteSelectedBtn" class="danger" disabled>Seçilenleri Sil</button>
-      </div>
-
-      <div class="naming">
-        <input id="baseNameInput" type="text" value="capture" placeholder="Dosya adı" />
-        <button id="downloadSelectedBtn" class="success" disabled>Seçilenleri İndir</button>
-        <button id="pickFolderBtn" class="success">Klasör Seç</button>
-        <button id="saveToFolderBtn" class="success" disabled>Klasöre Yaz</button>
-        <button id="clearCacheBtn" class="danger" disabled>Cache Temizle</button>
-        <div id="folderInfo" class="hint">Klasör seçilmedi</div>
-      </div>
-    </section>
-
-    <section class="card" style="display:grid; gap:8px;">
-      <div class="auto-controls">
-        <select id="autoDelaySelect">
-          <option value="5">5 sn sonra başla</option>
-          <option value="10">10 sn sonra başla</option>
-        </select>
-
-        <select id="autoIntervalSelect">
-          <option value="3">3 sn aralık</option>
-          <option value="5">5 sn aralık</option>
-        </select>
-
-        <input id="autoCountInput" type="text" value="6 foto" disabled />
-
-        <button id="autoStartBtn" class="warning" disabled>Oto Capture Başlat</button>
-        <button id="autoStopBtn" class="danger" disabled>Oto Capture Durdur</button>
-
-        <div class="hint" id="autoInfo">Oto capture kapalı</div>
-      </div>
+      <div class="muted" id="buildInfo">Son güncelleme: 2026-04-02 11:20</div>
     </section>
 
     <section class="workspace">
       <section class="left-pane">
+        <section class="card">
+          <div class="section-head">
+            <h2>🎥 Çekim İşlemleri</h2>
+            <span class="muted">Canlı görüntü ve capture ayarları</span>
+          </div>
+
+          <div class="controls-grid">
+            <select id="videoDevice" disabled></select>
+            <button id="grantBtn">🔓 İzin Ver ve Başlat</button>
+            <button id="refreshBtn">🔄 Yenile</button>
+            <button id="captureBtn" disabled>📸 PNG Capture</button>
+            <button id="recordBtn" class="success" disabled>⏺️ MP4 Başlat</button>
+            <button id="stopRecordBtn" class="danger" disabled>⏹️ Durdur</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <h2>⏱️ Oto Capture</h2>
+            <span class="muted">Varsayılan: 6 sn sonra, 3 sn ara, 6 foto</span>
+          </div>
+
+          <div class="auto-grid">
+            <label class="field">
+              Başlangıç gecikmesi
+              <input id="autoDelayInput" type="number" min="1" step="1" value="6" inputmode="numeric" />
+            </label>
+
+            <label class="field">
+              Aralık
+              <input id="autoIntervalInput" type="number" min="1" step="1" value="3" inputmode="numeric" />
+            </label>
+
+            <label class="field">
+              Foto adedi
+              <input id="autoCountInput" type="number" min="1" step="1" value="6" inputmode="numeric" />
+            </label>
+
+            <button id="autoStartBtn" class="warning" disabled>🟡 Oto Capture Başlat</button>
+            <button id="autoStopBtn" class="danger" disabled>🛑 Oto Capture Durdur</button>
+            <div class="hint" id="autoInfo">Oto capture kapalı</div>
+          </div>
+        </section>
+
         <section class="card preview-card">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            <strong>Canlı ön izleme</strong>
+          <div class="section-head">
+            <h2>🖥️ Canlı Ön İzleme</h2>
             <span class="muted" id="liveInfo">-</span>
           </div>
           <div class="preview-box live-box">
@@ -532,28 +550,45 @@
           </div>
         </section>
 
-        <section class="card" style="display:grid; gap:10px;">
+        <section class="card">
           <div class="meta">
             <div class="meta-card"><div class="meta-label">Cihaz</div><div id="deviceInfo" class="meta-value">-</div></div>
             <div class="meta-card"><div class="meta-label">Çözünürlük</div><div id="resolutionInfo" class="meta-value">-</div></div>
-            <div class="meta-card"><div class="meta-label">Kayıt formatı</div><div id="mimeInfo" class="meta-value">-</div></div>
-            <div class="meta-card"><div class="meta-label">Kayıt süresi</div><div id="durationInfo" class="meta-value">00:00</div></div>
+            <div class="meta-card"><div class="meta-label">Kayıt</div><div id="mimeInfo" class="meta-value">-</div></div>
+            <div class="meta-card"><div class="meta-label">Süre</div><div id="durationInfo" class="meta-value">00:00</div></div>
             <div class="meta-card"><div class="meta-label">Cache</div><div id="cacheInfo" class="meta-value">Hazır</div></div>
-            <div class="meta-card"><div class="meta-label">Oto capture</div><div id="autoStateInfo" class="meta-value">Kapalı</div></div>
+            <div class="meta-card"><div class="meta-label">Oto</div><div id="autoStateInfo" class="meta-value">Kapalı</div></div>
           </div>
+        </section>
+
+        <section class="card">
           <div id="status" class="status">Hazır.</div>
-          <div class="hint">
-            Tek tık seçim yapar. Çift tık ön izleme penceresi açar. Oto capture 6 foto üretir.
+          <div class="hint" style="margin-top:8px;">
+            Tek tık seçim yapar. Çift tık ön izleme açar. Her çekimde deklanşör sesi vardır.
           </div>
         </section>
       </section>
 
-      <section class="card gallery-card">
-        <div class="gallery-head">
-          <strong>Galeri</strong>
-          <span class="muted" id="galleryStats">0 öğe</span>
-        </div>
-        <div id="gallery" class="gallery"></div>
+      <section class="right-pane">
+        <section class="card">
+          <div class="section-head">
+            <h2>🗂️ Galeri ve Dosya İşlemleri</h2>
+            <span class="muted" id="galleryStats">0 öğe</span>
+          </div>
+
+          <div class="gallery-actions">
+            <input id="baseNameInput" type="text" value="capture" placeholder="Dosya adı" />
+            <button id="saveSelectedBtn" class="success" disabled>📁 Seçili Klasöre Kaydet</button>
+            <button id="selectAllBtn" disabled>✅ Tümünü Seç</button>
+            <button id="clearSelectionBtn" class="warning" disabled>↩️ Seçimi Temizle</button>
+            <button id="deleteSelectedBtn" class="danger" disabled>🗑️ Seçilenleri Sil</button>
+            <div class="hint" id="folderInfo">Klasör seçilmedi</div>
+          </div>
+        </section>
+
+        <section class="card gallery-card">
+          <div class="gallery" id="gallery"></div>
+        </section>
       </section>
     </section>
   </main>
@@ -562,14 +597,14 @@
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title" id="modalTitle">Ön izleme</div>
-        <button id="closeModalBtn" class="danger">Kapat</button>
+        <button id="closeModalBtn" class="danger">✖ Kapat</button>
       </div>
       <div class="modal-body" id="modalBody"></div>
     </div>
   </div>
 
   <script>
-    const APP_UPDATED_AT = "2026-04-02 10:44";
+    const APP_UPDATED_AT = "2026-04-02 11:20";
 
     const videoEl = document.getElementById("video");
     const deviceSelectEl = document.getElementById("videoDevice");
@@ -578,14 +613,10 @@
     const captureBtnEl = document.getElementById("captureBtn");
     const recordBtnEl = document.getElementById("recordBtn");
     const stopRecordBtnEl = document.getElementById("stopRecordBtn");
-    const stopStreamBtnEl = document.getElementById("stopStreamBtn");
     const selectAllBtnEl = document.getElementById("selectAllBtn");
     const clearSelectionBtnEl = document.getElementById("clearSelectionBtn");
     const deleteSelectedBtnEl = document.getElementById("deleteSelectedBtn");
-    const downloadSelectedBtnEl = document.getElementById("downloadSelectedBtn");
-    const pickFolderBtnEl = document.getElementById("pickFolderBtn");
-    const saveToFolderBtnEl = document.getElementById("saveToFolderBtn");
-    const clearCacheBtnEl = document.getElementById("clearCacheBtn");
+    const saveSelectedBtnEl = document.getElementById("saveSelectedBtn");
     const baseNameInputEl = document.getElementById("baseNameInput");
     const statusEl = document.getElementById("status");
     const deviceInfoEl = document.getElementById("deviceInfo");
@@ -603,8 +634,8 @@
     const modalBodyEl = document.getElementById("modalBody");
     const closeModalBtnEl = document.getElementById("closeModalBtn");
 
-    const autoDelaySelectEl = document.getElementById("autoDelaySelect");
-    const autoIntervalSelectEl = document.getElementById("autoIntervalSelect");
+    const autoDelayInputEl = document.getElementById("autoDelayInput");
+    const autoIntervalInputEl = document.getElementById("autoIntervalInput");
     const autoCountInputEl = document.getElementById("autoCountInput");
     const autoStartBtnEl = document.getElementById("autoStartBtn");
     const autoStopBtnEl = document.getElementById("autoStopBtn");
@@ -618,7 +649,8 @@
     let recordingStartedAt = null;
     let recordingTimerId = null;
     let permissionGranted = false;
-    let db = null;
+    let galleryDb = null;
+    let settingsDb = null;
     let isCacheReady = false;
     let folderHandle = null;
     let folderName = "";
@@ -626,16 +658,18 @@
 
     let autoCaptureTimeoutId = null;
     let autoCaptureIntervalId = null;
+    let autoCountdownIntervalId = null;
     let autoCaptureRunning = false;
     let autoCaptureStarted = false;
     let autoCaptureRemaining = 0;
     let autoCaptureTotal = 6;
-    let autoCaptureDelaySeconds = 5;
+    let autoCaptureDelaySeconds = 6;
     let autoCaptureIntervalSeconds = 3;
-    let autoCountdownIntervalId = null;
 
     const GALLERY_DB = "gopro-capture-studio-db";
     const GALLERY_STORE = "captures";
+    const SETTINGS_DB = "gopro-capture-studio-settings-db";
+    const SETTINGS_STORE = "settings";
 
     let galleryItems = [];
 
@@ -695,6 +729,17 @@
 
     function resetRecordingDuration() {
       setRecordingDurationLabel(0);
+    }
+
+    function readPositiveInt(inputEl, fallbackValue) {
+      const value = Number(inputEl.value);
+      if (!Number.isFinite(value) || value < 1) {
+        inputEl.value = String(fallbackValue);
+        return fallbackValue;
+      }
+      const normalized = Math.floor(value);
+      inputEl.value = String(normalized);
+      return normalized;
     }
 
     function startRecordingTimer() {
@@ -802,15 +847,18 @@
     }
 
     function updateFolderUi() {
-      folderInfoEl.textContent = folderHandle ? `Klasör: ${folderName}` : "Klasör seçilmedi";
+      folderInfoEl.textContent = folderHandle
+        ? `Seçili klasör: ${folderName}`
+        : "Klasör seçilmedi";
     }
 
     function updateAutoCaptureUi() {
       const hasStream = Boolean(currentStream);
       autoStartBtnEl.disabled = !hasStream || autoCaptureRunning || Boolean(mediaRecorder && mediaRecorder.state === "recording");
       autoStopBtnEl.disabled = !autoCaptureRunning;
-      autoDelaySelectEl.disabled = autoCaptureRunning;
-      autoIntervalSelectEl.disabled = autoCaptureRunning;
+      autoDelayInputEl.disabled = autoCaptureRunning;
+      autoIntervalInputEl.disabled = autoCaptureRunning;
+      autoCountInputEl.disabled = autoCaptureRunning;
       autoStartBtnEl.classList.toggle("auto-running", autoCaptureRunning);
       autoStateInfoEl.textContent = autoCaptureRunning
         ? (autoCaptureStarted ? `Çalışıyor • ${autoCaptureRemaining}/${autoCaptureTotal}` : `Bekliyor • ${autoCaptureDelaySeconds} sn`)
@@ -828,21 +876,18 @@
       const selectedCount = galleryItems.filter(item => item.selected).length;
       const hasItems = galleryItems.length > 0;
       const hasDevices = deviceSelectEl.options.length > 0 && deviceSelectEl.value;
+      const canSaveToFolder = selectedCount > 0 && supportsDirectoryWriting();
 
       deviceSelectEl.disabled = !permissionGranted || isRecording || !hasDevices || autoCaptureRunning;
       captureBtnEl.disabled = !hasStream || isRecording || !isCacheReady || autoCaptureRunning;
       recordBtnEl.disabled = !hasStream || isRecording || !selectedRecordingMimeType || !isCacheReady || autoCaptureRunning;
       stopRecordBtnEl.disabled = !isRecording;
-      stopStreamBtnEl.disabled = !hasStream;
       refreshBtnEl.disabled = !permissionGranted || autoCaptureRunning;
       grantBtnEl.disabled = permissionGranted && hasStream;
       selectAllBtnEl.disabled = !hasItems;
       clearSelectionBtnEl.disabled = selectedCount === 0;
       deleteSelectedBtnEl.disabled = selectedCount === 0;
-      downloadSelectedBtnEl.disabled = selectedCount === 0;
-      clearCacheBtnEl.disabled = !hasItems;
-      saveToFolderBtnEl.disabled = selectedCount === 0 || !folderHandle || !supportsDirectoryWriting();
-      pickFolderBtnEl.disabled = !supportsDirectoryWriting();
+      saveSelectedBtnEl.disabled = !canSaveToFolder;
       recordBtnEl.classList.toggle("recording", isRecording);
 
       updateFolderUi();
@@ -866,9 +911,7 @@
 
     function revokeGalleryObjectUrls() {
       for (const item of galleryItems) {
-        if (item.objectUrl) {
-          URL.revokeObjectURL(item.objectUrl);
-        }
+        if (item.objectUrl) URL.revokeObjectURL(item.objectUrl);
       }
     }
 
@@ -881,9 +924,7 @@
       ];
 
       for (const type of mp4Types) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          return type;
-        }
+        if (MediaRecorder.isTypeSupported(type)) return type;
       }
 
       return "";
@@ -910,21 +951,61 @@
         const tr = dbx.transaction(storeName, mode);
         const store = tr.objectStore(storeName);
         runner(store);
-
         tr.oncomplete = () => resolve();
         tr.onerror = () => reject(tr.error || new Error("DB işlem hatası."));
         tr.onabort = () => reject(tr.error || new Error("DB işlem iptal edildi."));
       });
     }
 
-    async function initCache() {
-      db = await openDb(GALLERY_DB, GALLERY_STORE);
+    async function initDatabases() {
+      galleryDb = await openDb(GALLERY_DB, GALLERY_STORE);
+      settingsDb = await openDb(SETTINGS_DB, SETTINGS_STORE, "key");
       isCacheReady = true;
       setCacheInfo("Hazır");
     }
 
+    async function saveFolderHandleToSettings() {
+      if (!settingsDb) return;
+      await tx(settingsDb, SETTINGS_STORE, "readwrite", store => {
+        store.put({ key: "output-folder", handle: folderHandle, name: folderName });
+      });
+    }
+
+    async function restoreFolderHandleFromSettings() {
+      if (!settingsDb) return;
+      return new Promise((resolve, reject) => {
+        const tr = settingsDb.transaction(SETTINGS_STORE, "readonly");
+        const store = tr.objectStore(SETTINGS_STORE);
+        const req = store.get("output-folder");
+
+        req.onsuccess = async () => {
+          const result = req.result;
+          if (!result?.handle) {
+            resolve();
+            return;
+          }
+
+          folderHandle = result.handle;
+          folderName = result.name || result.handle.name || "seçili_klasör";
+
+          if (folderHandle.queryPermission) {
+            try {
+              const permission = await folderHandle.queryPermission({ mode: "readwrite" });
+              if (permission === "denied") {
+                folderHandle = null;
+                folderName = "";
+              }
+            } catch (_) {}
+          }
+          resolve();
+        };
+
+        req.onerror = () => reject(req.error || new Error("Klasör ayarı okunamadı."));
+      });
+    }
+
     async function saveItemToCache(item) {
-      await tx(db, GALLERY_STORE, "readwrite", store => {
+      await tx(galleryDb, GALLERY_STORE, "readwrite", store => {
         store.put({
           id: item.id,
           kind: item.kind,
@@ -945,29 +1026,19 @@
 
     async function loadItemsFromCache() {
       return new Promise((resolve, reject) => {
-        const tr = db.transaction(GALLERY_STORE, "readonly");
+        const tr = galleryDb.transaction(GALLERY_STORE, "readonly");
         const store = tr.objectStore(GALLERY_STORE);
         const req = store.getAll();
-
         req.onsuccess = () => resolve(req.result || []);
         req.onerror = () => reject(req.error || new Error("Cache okunamadı."));
       });
     }
 
     async function deleteItemsFromCache(ids) {
-      await tx(db, GALLERY_STORE, "readwrite", store => {
+      await tx(galleryDb, GALLERY_STORE, "readwrite", store => {
         ids.forEach(id => store.delete(id));
       });
-
       setCacheInfo(`Silindi • ${formatCompactTime(Date.now())}`);
-    }
-
-    async function clearAllCache() {
-      await tx(db, GALLERY_STORE, "readwrite", store => {
-        store.clear();
-      });
-
-      setCacheInfo(`Temizlendi • ${formatCompactTime(Date.now())}`);
     }
 
     async function addGalleryItem(itemData) {
@@ -984,7 +1055,6 @@
 
     async function restoreGalleryFromCache() {
       const records = await loadItemsFromCache();
-
       revokeGalleryObjectUrls();
 
       galleryItems = records
@@ -1099,36 +1169,21 @@
         const actions = document.createElement("div");
         actions.className = "item-actions";
 
-        const dl = document.createElement("button");
-        dl.textContent = "İndir";
-        dl.addEventListener("click", (event) => {
-          event.stopPropagation();
-          const ext = item.kind === "image" ? "png" : "mp4";
-          triggerDownload(item.objectUrl, `${item.id}.${ext}`);
-        });
-
         const del = document.createElement("button");
         del.className = "danger";
-        del.textContent = "Sil";
+        del.textContent = "🗑️ Sil";
         del.addEventListener("click", async (event) => {
           event.stopPropagation();
           await deleteGalleryItemsByIds([item.id]);
         });
 
-        actions.append(dl, del);
+        actions.append(del);
         body.append(itemName, itemDate, actions);
         card.append(preview, body);
         galleryEl.appendChild(card);
       }
 
       updateUiState();
-    }
-
-    function triggerDownload(url, filename) {
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
     }
 
     async function getCanvasBlob(canvas, mimeType) {
@@ -1200,7 +1255,6 @@
     function waitForVideoReady(video) {
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("Video metadata yüklenmedi.")), 5000);
-
         video.addEventListener("loadedmetadata", () => {
           clearTimeout(timeout);
           resolve();
@@ -1273,24 +1327,9 @@
       liveInfoEl.textContent = "-";
     }
 
-    async function stopCurrentStream() {
-      finishAutoCapture("");
-      await stopRecordingIfNeeded(true);
-      cleanupStream();
-      setMetaInfo({
-        device: getSelectedDeviceLabel(),
-        resolution: "-",
-        mime: selectedRecordingMimeType || "-"
-      });
-      updateUiState();
-    }
-
     async function startSelectedCamera() {
       const deviceId = deviceSelectEl.value;
-
-      if (!deviceId) {
-        throw new Error("Önce bir kamera seç.");
-      }
+      if (!deviceId) throw new Error("Önce bir kamera seç.");
 
       finishAutoCapture("");
       await stopRecordingIfNeeded(true);
@@ -1330,34 +1369,23 @@
     async function initializeAndAutoStart() {
       await requestCameraPermission();
       const hasDevices = await populateVideoDevices();
-
-      if (!hasDevices) {
-        throw new Error("Kullanılabilir kamera bulunamadı.");
-      }
-
+      if (!hasDevices) throw new Error("Kullanılabilir kamera bulunamadı.");
       await startSelectedCamera();
     }
 
     async function createPngCapture(sourceLabel = "manual") {
-      if (!currentStream) {
-        throw new Error("Önce kamera açılmalı.");
-      }
+      if (!currentStream) throw new Error("Önce kamera açılmalı.");
 
       const width = videoEl.videoWidth;
       const height = videoEl.videoHeight;
-
-      if (!width || !height) {
-        throw new Error("Video hazır değil.");
-      }
+      if (!width || !height) throw new Error("Video hazır değil.");
 
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
 
       const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        throw new Error("Canvas context alınamadı.");
-      }
+      if (!ctx) throw new Error("Canvas context alınamadı.");
 
       ctx.drawImage(videoEl, 0, 0, width, height);
 
@@ -1412,11 +1440,13 @@
     }
 
     function startAutoCaptureCountdown() {
+      autoCaptureDelaySeconds = readPositiveInt(autoDelayInputEl, 6);
+      autoCaptureIntervalSeconds = readPositiveInt(autoIntervalInputEl, 3);
+      autoCaptureTotal = readPositiveInt(autoCountInputEl, 6);
+
       autoCaptureRunning = true;
       autoCaptureStarted = false;
       autoCaptureRemaining = autoCaptureTotal;
-      autoCaptureDelaySeconds = Number(autoDelaySelectEl.value);
-      autoCaptureIntervalSeconds = Number(autoIntervalSelectEl.value);
 
       let countdown = autoCaptureDelaySeconds;
       autoInfoEl.textContent = `${countdown} sn sonra başlayacak • ${autoCaptureIntervalSeconds} sn aralık • ${autoCaptureTotal} foto`;
@@ -1445,8 +1475,7 @@
         try {
           await runAutoCaptureStep();
 
-          if (!autoCaptureRunning) return;
-          if (autoCaptureRemaining <= 0) return;
+          if (!autoCaptureRunning || autoCaptureRemaining <= 0) return;
 
           autoCaptureIntervalId = window.setInterval(async () => {
             if (!autoCaptureRunning) return;
@@ -1456,6 +1485,7 @@
             }
 
             playSimpleBeep();
+
             try {
               await runAutoCaptureStep();
             } catch (error) {
@@ -1477,30 +1507,18 @@
     }
 
     async function startRecording() {
-      if (!currentStream) {
-        throw new Error("Önce stream açılmalı.");
-      }
-
-      if (!selectedRecordingMimeType) {
-        throw new Error("MP4 kayıt desteklenmiyor.");
-      }
-
-      if (mediaRecorder?.state === "recording") {
-        throw new Error("Kayıt zaten sürüyor.");
-      }
+      if (!currentStream) throw new Error("Önce stream açılmalı.");
+      if (!selectedRecordingMimeType) throw new Error("MP4 kayıt desteklenmiyor.");
+      if (mediaRecorder?.state === "recording") throw new Error("Kayıt zaten sürüyor.");
 
       finishAutoCapture("");
       recordedChunks = [];
       const recordingStartTime = Date.now();
 
-      mediaRecorder = new MediaRecorder(currentStream, {
-        mimeType: selectedRecordingMimeType
-      });
+      mediaRecorder = new MediaRecorder(currentStream, { mimeType: selectedRecordingMimeType });
 
       mediaRecorder.addEventListener("dataavailable", event => {
-        if (event.data && event.data.size > 0) {
-          recordedChunks.push(event.data);
-        }
+        if (event.data && event.data.size > 0) recordedChunks.push(event.data);
       });
 
       mediaRecorder.addEventListener("stop", async () => {
@@ -1552,11 +1570,8 @@
 
     async function deleteGalleryItemsByIds(ids) {
       const idSet = new Set(ids);
-
       galleryItems.forEach(item => {
-        if (idSet.has(item.id) && item.objectUrl) {
-          URL.revokeObjectURL(item.objectUrl);
-        }
+        if (idSet.has(item.id) && item.objectUrl) URL.revokeObjectURL(item.objectUrl);
       });
 
       galleryItems = galleryItems.filter(item => !idSet.has(item.id));
@@ -1565,41 +1580,25 @@
       setStatus(`${ids.length} öğe silindi.`);
     }
 
-    async function clearGalleryAndCache() {
-      revokeGalleryObjectUrls();
-      galleryItems = [];
-      await clearAllCache();
-      renderGallery();
-      setStatus("Tüm cache temizlendi.");
-    }
-
-    async function pickOutputFolder() {
+    async function saveSelectedToFolder() {
       if (!supportsDirectoryWriting()) {
         throw new Error("Bu tarayıcı klasör yazmayı desteklemiyor. Chrome veya Edge dene.");
       }
 
-      folderHandle = await window.showDirectoryPicker({ mode: "readwrite" });
-      folderName = folderHandle.name || "seçili_klasör";
-      updateUiState();
-      setStatus(`Klasör seçildi: ${folderName}`);
-    }
-
-    async function writeBlobToDirectory(dirHandle, fileName, blob) {
-      const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
-      const writable = await fileHandle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-    }
-
-    async function saveSelectedToFolder() {
       const items = getSelectedGalleryItems();
-
       if (!items.length) {
         throw new Error("Önce öğe seç.");
       }
 
       if (!folderHandle) {
-        throw new Error("Önce klasör seç.");
+        folderHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        folderName = folderHandle.name || "seçili_klasör";
+        await saveFolderHandleToSettings();
+      } else if (folderHandle.requestPermission) {
+        const permission = await folderHandle.requestPermission({ mode: "readwrite" });
+        if (permission !== "granted") {
+          throw new Error("Klasöre yazma izni verilmedi.");
+        }
       }
 
       const baseName = sanitizeBaseName(baseNameInputEl.value);
@@ -1610,29 +1609,15 @@
         const ext = item.kind === "image" ? "png" : "mp4";
         const datePart = createTimeStampFilePart(item.createdAt);
         const fileName = `${baseName}_${no}_${datePart}.${ext}`;
-        await writeBlobToDirectory(folderHandle, fileName, item.blob);
+
+        const fileHandle = await folderHandle.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(item.blob);
+        await writable.close();
       }
 
-      setStatus(`${items.length} öğe klasöre yazıldı.\nŞablon: ${baseName}_01_YYYYMMDD_HHMMSS`);
-    }
-
-    function downloadSelectedItems() {
-      const items = getSelectedGalleryItems();
-
-      if (!items.length) {
-        throw new Error("Önce öğe seç.");
-      }
-
-      const baseName = sanitizeBaseName(baseNameInputEl.value);
-
-      items.forEach((item, index) => {
-        const no = pad2(index + 1);
-        const ext = item.kind === "image" ? "png" : "mp4";
-        const datePart = createTimeStampFilePart(item.createdAt);
-        triggerDownload(item.objectUrl, `${baseName}_${no}_${datePart}.${ext}`);
-      });
-
-      setStatus(`${items.length} öğe indirildi.\nŞablon: ${baseName}_01_YYYYMMDD_HHMMSS`);
+      updateUiState();
+      setStatus(`${items.length} öğe kaydedildi.\nKlasör: ${folderName}\nŞablon: ${baseName}_01_YYYYMMDD_HHMMSS`);
     }
 
     function handleError(error) {
@@ -1712,15 +1697,6 @@
       }
     });
 
-    stopStreamBtnEl.addEventListener("click", async () => {
-      try {
-        await stopCurrentStream();
-        setStatus("Stream durduruldu.");
-      } catch (error) {
-        handleError(error);
-      }
-    });
-
     selectAllBtnEl.addEventListener("click", () => {
       const shouldSelect = galleryItems.some(item => !item.selected);
       galleryItems.forEach(item => {
@@ -1747,33 +1723,9 @@
       }
     });
 
-    downloadSelectedBtnEl.addEventListener("click", () => {
-      try {
-        downloadSelectedItems();
-      } catch (error) {
-        handleError(error);
-      }
-    });
-
-    pickFolderBtnEl.addEventListener("click", async () => {
-      try {
-        await pickOutputFolder();
-      } catch (error) {
-        handleError(error);
-      }
-    });
-
-    saveToFolderBtnEl.addEventListener("click", async () => {
+    saveSelectedBtnEl.addEventListener("click", async () => {
       try {
         await saveSelectedToFolder();
-      } catch (error) {
-        handleError(error);
-      }
-    });
-
-    clearCacheBtnEl.addEventListener("click", async () => {
-      try {
-        await clearGalleryAndCache();
       } catch (error) {
         handleError(error);
       }
@@ -1798,13 +1750,7 @@
 
       try {
         const ok = await populateVideoDevices();
-
-        if (!ok) {
-          await stopCurrentStream();
-          return;
-        }
-
-        if (!currentStream) {
+        if (ok && !currentStream) {
           await startSelectedCamera();
         }
       } catch (error) {
@@ -1822,8 +1768,8 @@
     (async function init() {
       try {
         buildInfoEl.textContent = `Son güncelleme: ${APP_UPDATED_AT}`;
-        autoCountInputEl.value = `${autoCaptureTotal} foto`;
         ensureBrowserSupport();
+        ensureAudioContext();
         selectedRecordingMimeType = pickSupportedMp4MimeType();
         setMetaInfo({
           device: "-",
@@ -1831,7 +1777,11 @@
           mime: selectedRecordingMimeType || "MP4 desteklenmiyor"
         });
         resetRecordingDuration();
-        await initCache();
+        autoDelayInputEl.value = "6";
+        autoIntervalInputEl.value = "3";
+        autoCountInputEl.value = "6";
+        await initDatabases();
+        await restoreFolderHandleFromSettings();
         await restoreGalleryFromCache();
         updateUiState();
         setStatus("Hazır. 'İzin Ver ve Başlat' ile devam et.");
