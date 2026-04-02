@@ -139,7 +139,7 @@
 
     .auto-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(110px, 140px)) minmax(190px, 1fr);
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 8px;
       align-items: end;
     }
@@ -554,7 +554,10 @@
     }
 
     @media (max-width: 1360px) {
-      .controls-grid,
+      .controls-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
       .auto-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
@@ -609,7 +612,7 @@
         <h1 id="appTitle">PNG + MP4 galeri, cache, klasöre kaydetme</h1>
       </div>
       <div class="topbar-actions">
-        <div class="muted" id="buildInfo">v1.09 • Yazılım güncelleme: 02.04.2026 14:35:00</div>
+        <div class="muted" id="buildInfo">v1.11 • Yazılım güncelleme: 02.04.2026 15:05:00</div>
         <button id="langToggleBtn" class="lang-btn" title="Deutsch / Türkçe">
           <span class="btn-icon">🇩🇪</span>
           <span class="btn-label" id="langToggleLabel">DE</span>
@@ -653,22 +656,30 @@
         <section class="card">
           <div class="section-head">
             <h2 id="autoSectionTitle">⏱️ Oto Capture</h2>
-            <span class="muted" id="autoSectionHint">Varsayılan: 6 sn sonra, 3 sn ara, 6 foto</span>
+            <span class="muted" id="autoSectionHint">Varsayılan: 6 sn sonra, 3 sn ara, 6 adet</span>
           </div>
 
           <div class="auto-grid">
+            <label class="field">
+              <span id="autoModeLabel">Mod</span>
+              <select id="autoModeSelect">
+                <option value="photo">Foto</option>
+                <option value="video">Video</option>
+              </select>
+            </label>
+
             <label class="field">
               <span id="autoDelayLabel">Başlangıç gecikmesi</span>
               <input id="autoDelayInput" type="number" min="1" step="1" value="6" inputmode="numeric" />
             </label>
 
             <label class="field">
-              <span id="autoIntervalLabel">Aralık</span>
+              <span id="autoIntervalLabel">Aralık / Klip süresi</span>
               <input id="autoIntervalInput" type="number" min="1" step="1" value="3" inputmode="numeric" />
             </label>
 
             <label class="field">
-              <span id="autoCountLabel">Foto adedi</span>
+              <span id="autoCountLabel">Adet</span>
               <input id="autoCountInput" type="number" min="1" step="1" value="6" inputmode="numeric" />
             </label>
 
@@ -779,8 +790,8 @@
   </div>
 
   <script>
-    const APP_VERSION = "1.09";
-    const APP_UPDATED_AT = "02.04.2026 14:35:00";
+    const APP_VERSION = "1.11";
+    const APP_UPDATED_AT = "02.04.2026 15:05:00";
 
     const translations = {
       tr: {
@@ -793,10 +804,13 @@
         recordStart: "MP4 Başlat",
         recordStop: "MP4 Durdur",
         autoSectionTitle: "⏱️ Oto Capture",
-        autoSectionHint: "Varsayılan: 6 sn sonra, 3 sn ara, 6 foto",
+        autoSectionHint: "Varsayılan: 6 sn sonra, 3 sn ara, 6 adet",
+        autoModeLabel: "Mod",
+        autoModePhoto: "Foto",
+        autoModeVideo: "Video",
         autoDelayLabel: "Başlangıç gecikmesi",
-        autoIntervalLabel: "Aralık",
-        autoCountLabel: "Foto adedi",
+        autoIntervalLabel: "Aralık / Klip süresi",
+        autoCountLabel: "Adet",
         autoStart: "Oto Capture Başlat",
         autoStop: "Oto Capture Durdur",
         previewTitle: "🖥️ Canlı Ön İzleme",
@@ -839,11 +853,11 @@
         canvasBlobFailed: "Canvas blob üretilemedi.",
         pngAdded: "PNG capture eklendi.\nBoyut: {width}x{height}\nTarih: {date}",
         autoDisabled: "Oto capture kapalı",
-        autoWaiting: "{delay} sn sonra başlayacak • {interval} sn aralık • {count} foto",
+        autoWaiting: "{delay} sn sonra başlayacak • {interval} sn aralık • {count} {mode}",
         autoRunning: "Çalışıyor • {remaining}/{total}",
-        autoStarted: "Başladı • 1/{total} çekiliyor...",
+        autoStarted: "Başladı • 1/{total} {mode} çekiliyor...",
         autoStepDone: "{step}/{total} tamamlandı • Sonraki {interval} sn sonra",
-        autoDone: "Oto capture tamamlandı.\nToplam {total} foto eklendi.\nSon boyut: {width}x{height}",
+        autoDone: "Oto capture tamamlandı.\nToplam {total} {mode} eklendi.\nSon boyut: {width}x{height}",
         autoStopped: "Oto capture durduruldu.",
         streamRequired: "Önce stream açılmalı.",
         recordAlready: "Kayıt zaten sürüyor.",
@@ -873,7 +887,10 @@
         kindImage: "PNG",
         kindVideo: "MP4",
         cardSave: "Kaydet",
-        cardDelete: "Sil"
+        cardDelete: "Sil",
+        streamEnded: "Kamera akışı sona erdi. GoPro bağlantısını kontrol et.",
+        autoUnitPhoto: "foto",
+        autoUnitVideo: "video"
       },
       de: {
         appTitle: "PNG + MP4 Galerie, Cache, im Ordner speichern",
@@ -885,10 +902,13 @@
         recordStart: "MP4 Start",
         recordStop: "MP4 Stopp",
         autoSectionTitle: "⏱️ Auto Capture",
-        autoSectionHint: "Standard: nach 6 Sek., alle 3 Sek., 6 Fotos",
+        autoSectionHint: "Standard: nach 6 Sek., alle 3 Sek., 6 Einträge",
+        autoModeLabel: "Modus",
+        autoModePhoto: "Foto",
+        autoModeVideo: "Video",
         autoDelayLabel: "Startverzögerung",
-        autoIntervalLabel: "Intervall",
-        autoCountLabel: "Anzahl Fotos",
+        autoIntervalLabel: "Intervall / Clipdauer",
+        autoCountLabel: "Anzahl",
         autoStart: "Auto Capture Start",
         autoStop: "Auto Capture Stopp",
         previewTitle: "🖥️ Live-Vorschau",
@@ -931,11 +951,11 @@
         canvasBlobFailed: "Canvas-Blob konnte nicht erzeugt werden.",
         pngAdded: "PNG hinzugefügt.\nGröße: {width}x{height}\nDatum: {date}",
         autoDisabled: "Auto Capture ist aus",
-        autoWaiting: "Start in {delay} Sek. • Intervall {interval} Sek. • {count} Fotos",
+        autoWaiting: "Start in {delay} Sek. • Intervall {interval} Sek. • {count} {mode}",
         autoRunning: "Läuft • {remaining}/{total}",
-        autoStarted: "Gestartet • 1/{total} wird aufgenommen...",
+        autoStarted: "Gestartet • 1/{total} {mode} wird aufgenommen...",
         autoStepDone: "{step}/{total} fertig • Nächste in {interval} Sek.",
-        autoDone: "Auto Capture abgeschlossen.\nInsgesamt {total} Fotos hinzugefügt.\nLetzte Größe: {width}x{height}",
+        autoDone: "Auto Capture abgeschlossen.\nInsgesamt {total} {mode} hinzugefügt.\nLetzte Größe: {width}x{height}",
         autoStopped: "Auto Capture gestoppt.",
         streamRequired: "Bitte zuerst den Stream starten.",
         recordAlready: "Aufnahme läuft bereits.",
@@ -965,7 +985,10 @@
         kindImage: "PNG",
         kindVideo: "MP4",
         cardSave: "Speichern",
-        cardDelete: "Löschen"
+        cardDelete: "Löschen",
+        streamEnded: "Kamera-Stream wurde beendet. GoPro-Verbindung prüfen.",
+        autoUnitPhoto: "Fotos",
+        autoUnitVideo: "Videos"
       }
     };
 
@@ -1009,6 +1032,7 @@
     const modalBodyEl = document.getElementById("modalBody");
     const closeModalBtnEl = document.getElementById("closeModalBtn");
 
+    const autoModeSelectEl = document.getElementById("autoModeSelect");
     const autoDelayInputEl = document.getElementById("autoDelayInput");
     const autoIntervalInputEl = document.getElementById("autoIntervalInput");
     const autoCountInputEl = document.getElementById("autoCountInput");
@@ -1042,6 +1066,7 @@
     let autoCaptureTotal = 6;
     let autoCaptureDelaySeconds = 6;
     let autoCaptureIntervalSeconds = 3;
+    let autoCaptureMode = "photo";
 
     const GALLERY_DB = "gopro-capture-studio-db";
     const GALLERY_STORE = "captures";
@@ -1069,6 +1094,7 @@
       document.getElementById("captureBtnLabel").textContent = t("captureBtnLabel");
       document.getElementById("autoSectionTitle").textContent = t("autoSectionTitle");
       document.getElementById("autoSectionHint").textContent = t("autoSectionHint");
+      document.getElementById("autoModeLabel").textContent = t("autoModeLabel");
       document.getElementById("autoDelayLabel").textContent = t("autoDelayLabel");
       document.getElementById("autoIntervalLabel").textContent = t("autoIntervalLabel");
       document.getElementById("autoCountLabel").textContent = t("autoCountLabel");
@@ -1090,10 +1116,8 @@
       buildInfoEl.textContent = t("buildInfo");
       baseNameInputEl.placeholder = t("baseNamePlaceholder");
       langToggleLabelEl.textContent = currentLang === "tr" ? "DE" : "TR";
-
-      if (!statusEl.dataset.userMessage) {
-        setStatus(t("readyShort"));
-      }
+      autoModeSelectEl.options[0].textContent = t("autoModePhoto");
+      autoModeSelectEl.options[1].textContent = t("autoModeVideo");
 
       updateUiState();
       renderGallery();
@@ -1176,6 +1200,10 @@
       const normalized = Math.floor(value);
       inputEl.value = String(normalized);
       return normalized;
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     function startRecordingTimer() {
@@ -1313,12 +1341,22 @@
       const isRecording = Boolean(mediaRecorder && mediaRecorder.state === "recording");
 
       autoToggleBtnEl.disabled = !hasStream || isRecording;
+      autoModeSelectEl.disabled = autoCaptureRunning;
       autoDelayInputEl.disabled = autoCaptureRunning;
       autoIntervalInputEl.disabled = autoCaptureRunning;
       autoCountInputEl.disabled = autoCaptureRunning;
 
       autoStateInfoEl.textContent = autoCaptureRunning
-        ? (autoCaptureStarted ? t("autoRunning", { remaining: autoCaptureRemaining, total: autoCaptureTotal }) : t("autoWaiting", { delay: autoCaptureDelaySeconds, interval: autoCaptureIntervalSeconds, count: autoCaptureTotal }))
+        ? (
+            autoCaptureStarted
+              ? t("autoRunning", { remaining: autoCaptureRemaining, total: autoCaptureTotal })
+              : t("autoWaiting", {
+                  delay: autoCaptureDelaySeconds,
+                  interval: autoCaptureIntervalSeconds,
+                  count: autoCaptureTotal,
+                  mode: autoCaptureMode === "video" ? t("autoUnitVideo") : t("autoUnitPhoto")
+                })
+          )
         : t("autoOff");
 
       updateAutoButtonUi();
@@ -1428,7 +1466,7 @@
     async function saveFolderHandleToSettings() {
       if (!settingsDb || !folderHandle) return;
       await tx(settingsDb, SETTINGS_STORE, "readwrite", store => {
-        store.put({ key: "output-folder", handle: folderHandle, name: folderName, lang: currentLang });
+        store.put({ key: "output-folder", handle: folderHandle, name: folderName });
       });
     }
 
@@ -1888,12 +1926,25 @@
       });
 
       currentStream = stream;
+      videoEl.srcObject = null;
+      videoEl.load();
       videoEl.srcObject = stream;
+
+      const track = stream.getVideoTracks()[0];
+
+      track.addEventListener("ended", () => {
+        cleanupStream();
+        updateUiState();
+        setStatus(t("streamEnded"));
+      });
+
+      track.addEventListener("mute", () => {
+        setStatus(t("streamEnded"));
+      });
 
       await waitForVideoReady(videoEl);
       await videoEl.play();
 
-      const track = stream.getVideoTracks()[0];
       const settings = track.getSettings();
       const resolution = `${settings.width ?? "?"}x${settings.height ?? "?"} @ ${settings.frameRate ?? "?"}fps`;
 
@@ -1957,6 +2008,71 @@
       return { width, height, createdAt };
     }
 
+    async function createTimedVideoCapture(durationSeconds, sourceLabel = "auto") {
+      if (!currentStream) {
+        throw new Error(t("streamRequired"));
+      }
+
+      if (!selectedRecordingMimeType) {
+        throw new Error(t("mp4NotSupported"));
+      }
+
+      const localChunks = [];
+      const startedAt = Date.now();
+      const localRecorder = new MediaRecorder(currentStream, {
+        mimeType: selectedRecordingMimeType
+      });
+
+      localRecorder.addEventListener("dataavailable", event => {
+        if (event.data && event.data.size > 0) {
+          localChunks.push(event.data);
+        }
+      });
+
+      const stopPromise = new Promise((resolve, reject) => {
+        localRecorder.addEventListener("stop", resolve, { once: true });
+        localRecorder.addEventListener("error", () => reject(new Error(t("mediaRecorderError"))), { once: true });
+      });
+
+      localRecorder.start(500);
+      await sleep(Math.max(1, durationSeconds) * 1000);
+
+      if (localRecorder.state === "recording") {
+        localRecorder.stop();
+      }
+
+      await stopPromise;
+
+      if (!localChunks.length) {
+        throw new Error(t("recordNoData"));
+      }
+
+      const blob = new Blob(localChunks, { type: selectedRecordingMimeType });
+      const createdAt = Date.now();
+
+      await addGalleryItem({
+        id: `${sourceLabel}_video_${createTimeStampFilePart(createdAt)}`,
+        kind: "video",
+        blob,
+        createdAt,
+        createdAtLabel: formatDateTimeLabel(createdAt),
+        size: blob.size,
+        mimeType: selectedRecordingMimeType,
+        width: videoEl.videoWidth || null,
+        height: videoEl.videoHeight || null,
+        durationMs: createdAt - startedAt,
+        deviceLabel: getSelectedDeviceLabel()
+      });
+
+      return {
+        createdAt,
+        size: blob.size,
+        durationMs: createdAt - startedAt,
+        width: videoEl.videoWidth || 0,
+        height: videoEl.videoHeight || 0
+      };
+    }
+
     async function captureFrame() {
       const result = await createPngCapture("manual");
       setStatus(t("pngAdded", {
@@ -1973,12 +2089,44 @@
       }
 
       if (autoCaptureRemaining <= 0) {
-        finishAutoCapture(t("autoDone", { total: autoCaptureTotal, width: "-", height: "-" }));
+        finishAutoCapture(
+          t("autoDone", {
+            total: autoCaptureTotal,
+            mode: autoCaptureMode === "video" ? t("autoUnitVideo") : t("autoUnitPhoto"),
+            width: "-",
+            height: "-"
+          })
+        );
         return;
       }
 
       const stepNo = autoCaptureTotal - autoCaptureRemaining + 1;
-      const result = await createPngCapture("auto");
+
+      if (autoCaptureMode === "photo") {
+        const result = await createPngCapture("auto");
+        autoCaptureRemaining -= 1;
+
+        if (autoCaptureRemaining > 0) {
+          autoInfoEl.textContent = t("autoStepDone", {
+            step: stepNo,
+            total: autoCaptureTotal,
+            interval: autoCaptureIntervalSeconds
+          });
+          updateUiState();
+        } else {
+          finishAutoCapture(
+            t("autoDone", {
+              total: autoCaptureTotal,
+              mode: t("autoUnitPhoto"),
+              width: result.width,
+              height: result.height
+            })
+          );
+        }
+        return;
+      }
+
+      const result = await createTimedVideoCapture(autoCaptureIntervalSeconds, "auto");
       autoCaptureRemaining -= 1;
 
       if (autoCaptureRemaining > 0) {
@@ -1989,15 +2137,19 @@
         });
         updateUiState();
       } else {
-        finishAutoCapture(t("autoDone", {
-          total: autoCaptureTotal,
-          width: result.width,
-          height: result.height
-        }));
+        finishAutoCapture(
+          t("autoDone", {
+            total: autoCaptureTotal,
+            mode: t("autoUnitVideo"),
+            width: result.width || "-",
+            height: result.height || "-"
+          })
+        );
       }
     }
 
     function startAutoCaptureCountdown() {
+      autoCaptureMode = autoModeSelectEl.value;
       autoCaptureDelaySeconds = readPositiveInt(autoDelayInputEl, 6);
       autoCaptureIntervalSeconds = readPositiveInt(autoIntervalInputEl, 3);
       autoCaptureTotal = readPositiveInt(autoCountInputEl, 6);
@@ -2007,10 +2159,12 @@
       autoCaptureRemaining = autoCaptureTotal;
 
       let countdown = autoCaptureDelaySeconds;
+
       autoInfoEl.textContent = t("autoWaiting", {
         delay: countdown,
         interval: autoCaptureIntervalSeconds,
-        count: autoCaptureTotal
+        count: autoCaptureTotal,
+        mode: autoCaptureMode === "video" ? t("autoUnitVideo") : t("autoUnitPhoto")
       });
       updateUiState();
 
@@ -2023,7 +2177,8 @@
           autoInfoEl.textContent = t("autoWaiting", {
             delay: countdown,
             interval: autoCaptureIntervalSeconds,
-            count: autoCaptureTotal
+            count: autoCaptureTotal,
+            mode: autoCaptureMode === "video" ? t("autoUnitVideo") : t("autoUnitPhoto")
           });
         }
       }, 1000);
@@ -2035,7 +2190,10 @@
         if (!autoCaptureRunning) return;
 
         autoCaptureStarted = true;
-        autoInfoEl.textContent = t("autoStarted", { total: autoCaptureTotal });
+        autoInfoEl.textContent = t("autoStarted", {
+          total: autoCaptureTotal,
+          mode: autoCaptureMode === "video" ? t("autoUnitVideo") : t("autoUnitPhoto")
+        });
         updateUiState();
 
         try {
@@ -2043,22 +2201,47 @@
 
           if (!autoCaptureRunning || autoCaptureRemaining <= 0) return;
 
-          autoCaptureIntervalId = window.setInterval(async () => {
-            if (!autoCaptureRunning) return;
-            if (autoCaptureRemaining <= 0) {
-              finishAutoCapture(t("autoDone", { total: autoCaptureTotal, width: "-", height: "-" }));
-              return;
-            }
+          if (autoCaptureMode === "photo") {
+            autoCaptureIntervalId = window.setInterval(async () => {
+              if (!autoCaptureRunning) return;
+              if (autoCaptureRemaining <= 0) {
+                finishAutoCapture(
+                  t("autoDone", {
+                    total: autoCaptureTotal,
+                    mode: t("autoUnitPhoto"),
+                    width: "-",
+                    height: "-"
+                  })
+                );
+                return;
+              }
 
-            playSimpleBeep();
+              playSimpleBeep();
 
-            try {
-              await runAutoCaptureStep();
-            } catch (error) {
-              handleError(error);
-              finishAutoCapture(t("autoStopped"));
+              try {
+                await runAutoCaptureStep();
+              } catch (error) {
+                handleError(error);
+                finishAutoCapture(t("autoStopped"));
+              }
+            }, autoCaptureIntervalSeconds * 1000);
+            return;
+          }
+
+          const runNextVideo = async () => {
+            while (autoCaptureRunning && autoCaptureRemaining > 0) {
+              await sleep(300);
+              try {
+                await runAutoCaptureStep();
+              } catch (error) {
+                handleError(error);
+                finishAutoCapture(t("autoStopped"));
+                return;
+              }
             }
-          }, autoCaptureIntervalSeconds * 1000);
+          };
+
+          await runNextVideo();
         } catch (error) {
           handleError(error);
           finishAutoCapture(t("autoStopped"));
@@ -2368,7 +2551,6 @@
 
     (async function init() {
       try {
-        buildInfoEl.textContent = t("buildInfo");
         ensureBrowserSupport();
         selectedRecordingMimeType = pickSupportedMp4MimeType();
         setMetaInfo({
@@ -2377,6 +2559,7 @@
           mime: selectedRecordingMimeType || "MP4 desteklenmiyor"
         });
         resetRecordingDuration();
+        autoModeSelectEl.value = "photo";
         autoDelayInputEl.value = "6";
         autoIntervalInputEl.value = "3";
         autoCountInputEl.value = "6";
