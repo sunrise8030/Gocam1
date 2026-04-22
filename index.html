@@ -1090,11 +1090,11 @@
 
       <div class="topbar-actions">
 
-        <div class="muted" id="buildInfo">v1.14 • Yazılım güncelleme: 22.04.2026 10:20:00</div>
+        <div class="muted" id="buildInfo">v1.15 • Yazılım güncelleme: 22.04.2026 10:45:00</div>
 
         <button id="langToggleBtn" class="lang-btn" title="Deutsch / Türkçe">
 
-          <span class="btn-icon">🇩🇪</span>
+          <span class="btn-icon" id="langToggleFlag">🇩🇪</span>
 
           <span class="btn-label" id="langToggleLabel">DE</span>
 
@@ -1398,9 +1398,9 @@
 
   <script>
 
-    const APP_VERSION = "1.14";
+    const APP_VERSION = "1.15";
 
-    const APP_UPDATED_AT = "22.04.2026 10:20:00";
+    const APP_UPDATED_AT = "22.04.2026 10:45:00";
 
     const FIXED_LOGO_URL = "./Aplus_logo.png";
 
@@ -1876,6 +1876,8 @@
 
     const langToggleLabelEl = document.getElementById("langToggleLabel");
 
+    const langToggleFlagEl = document.getElementById("langToggleFlag");
+
     const previewModalEl = document.getElementById("previewModal");
 
     const modalTitleEl = document.getElementById("modalTitle");
@@ -2065,6 +2067,8 @@
       patientNameInputEl.placeholder = t("patientNamePlaceholder");
 
       baseNameInputEl.placeholder = t("baseNamePlaceholder");
+
+      langToggleFlagEl.textContent = currentLang === "tr" ? "🇩🇪" : "🇹🇷";
 
       langToggleLabelEl.textContent = currentLang === "tr" ? "DE" : "TR";
 
@@ -2304,11 +2308,11 @@
 
         if (brightness > 235 && saturation < 28) {
 
-          data[i + 3] = Math.round(a * 0.10);
+          data[i + 3] = Math.round(a * 0.18);
 
         } else if (brightness > 210 && saturation < 40) {
 
-          data[i + 3] = Math.round(a * 0.28);
+          data[i + 3] = Math.round(a * 0.42);
 
         }
 
@@ -2338,11 +2342,11 @@
 
         const source = processedLogo || logo;
 
-        const pad = Math.round(width * 0.022);
+        const pad = Math.round(width * 0.018);
 
-        const maxLogoW = Math.round(width * 0.18);
+        const maxLogoW = Math.round(width * 0.26);
 
-        const maxLogoH = Math.round(height * 0.10);
+        const maxLogoH = Math.round(height * 0.145);
 
         const scale = Math.min(maxLogoW / source.width, maxLogoH / source.height, 1);
 
@@ -2356,9 +2360,31 @@
 
         ctx.save();
 
-        ctx.globalAlpha = 0.88;
+        ctx.globalAlpha = 0.98;
 
         ctx.drawImage(source, x, y, drawW, drawH);
+
+        ctx.restore();
+
+        const text = "Sinsheim";
+
+        const textY = y + drawH + Math.round(height * 0.010);
+
+        ctx.save();
+
+        ctx.textAlign = "center";
+
+        ctx.textBaseline = "top";
+
+        ctx.font = `700 ${Math.max(16, Math.round(height * 0.018))}px Inter, Arial, sans-serif`;
+
+        ctx.fillStyle = "rgba(255,255,255,0.96)";
+
+        ctx.shadowColor = "rgba(0,0,0,0.55)";
+
+        ctx.shadowBlur = 6;
+
+        ctx.fillText(text, x + drawW / 2, textY);
 
         ctx.restore();
 
@@ -2370,21 +2396,17 @@
 
     }
 
-    async function drawPhotoOverlay(ctx, width, height, createdAt) {
+    async function drawPhotoOverlay(ctx, width, height) {
 
       const patientName = patientNameInputEl.value.trim() || "-";
 
-      const fileNo = getOverlayFileNo();
-
-      const dateText = formatDateTimeLabel(createdAt);
-
       await drawLogoTopRight(ctx, width, height);
 
-      const pad = Math.round(width * 0.022);
+      const pad = Math.round(width * 0.020);
 
-      const infoBoxW = Math.round(width * 0.46);
+      const infoBoxW = Math.round(width * 0.26);
 
-      const infoBoxH = Math.round(height * 0.14);
+      const infoBoxH = Math.round(height * 0.066);
 
       const infoX = pad;
 
@@ -2392,9 +2414,9 @@
 
       ctx.save();
 
-      ctx.fillStyle = "rgba(0,0,0,0.82)";
+      ctx.fillStyle = "rgba(0,0,0,0.88)";
 
-      drawRoundedRect(ctx, infoX, infoY, infoBoxW, infoBoxH, 18);
+      drawRoundedRect(ctx, infoX, infoY, infoBoxW, infoBoxH, 13);
 
       ctx.fill();
 
@@ -2402,29 +2424,11 @@
 
       ctx.textBaseline = "middle";
 
-      const nameFont = Math.max(24, Math.round(height * 0.032));
-
-      const metaFont = Math.max(16, Math.round(height * 0.020));
-
-      const left = infoX + 18;
-
       ctx.fillStyle = "rgba(255,255,255,1)";
 
-      ctx.font = `800 ${nameFont}px Inter, Arial, sans-serif`;
+      ctx.font = `800 ${Math.max(18, Math.round(height * 0.021))}px Inter, Arial, sans-serif`;
 
-      ctx.fillText(patientName, left, infoY + infoBoxH * 0.34);
-
-      ctx.font = `600 ${metaFont}px Inter, Arial, sans-serif`;
-
-      ctx.fillText(dateText, left, infoY + infoBoxH * 0.70);
-
-      ctx.textAlign = "right";
-
-      ctx.fillStyle = "rgba(77,163,255,1)";
-
-      ctx.font = `800 ${metaFont}px Inter, Arial, sans-serif`;
-
-      ctx.fillText(`No: ${fileNo}`, infoX + infoBoxW - 18, infoY + infoBoxH * 0.70);
+      ctx.fillText(patientName, infoX + 14, infoY + infoBoxH / 2);
 
       ctx.restore();
 
@@ -3334,13 +3338,7 @@
 
         if (event.target.closest("button")) return;
 
-        if (clickTimer) {
-
-          clearTimeout(clickTimer);
-
-          clickTimer = null;
-
-        }
+        if (clickTimer) clearTimeout(clickTimer);
 
         clickTimer = setTimeout(() => {
 
@@ -3778,9 +3776,9 @@
 
       ctx.drawImage(videoEl, 0, 0, width, height);
 
-      const createdAt = Date.now();
+      await drawPhotoOverlay(ctx, width, height);
 
-      await drawPhotoOverlay(ctx, width, height, createdAt);
+      const createdAt = Date.now();
 
       const blob = await getCanvasBlob(canvas, "image/png");
 
